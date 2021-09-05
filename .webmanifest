@@ -3,7 +3,7 @@
   "name": "LogiWaze Foxhole Routes",
   "icons": [
     {
-      "src": "/favicon.svg",
+      "src": "images/favicon.svg",
       "type": "image/svg",
       "sizes": "192x192"
     }
@@ -19,12 +19,12 @@
       "short_name": "LogiWaze",
       "description": "LogiWaze Foxhole Routes",
       "url": "/",
-      "icons": [{ "src": "/favicon.svg", "sizes": "192x192" }]
+      "icons": [{ "src": "images/favicon.svg", "sizes": "192x192" }]
   ],
   "description": "LogiWaze Foxhole Routes",
   "screenshots": [
     {
-      "src": "/screenshot.png",
+      "src": "images/screenshot.png",
       "type": "image/png",
       "sizes": "540x720"
     }
