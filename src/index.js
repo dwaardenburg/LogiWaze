@@ -4,8 +4,6 @@ global.L = require('leaflet');
 global.$ = require('jquery');
 //require('jquery-ui');
 
-
-
 global.VectorControlGrid = {
     Create: (MaxZoom, Offset, API, RoadWidth, ControlWidth, GridDepth) => require('./IVectorControlGrid.js').Create(MaxZoom, Offset, API, RoadWidth, ControlWidth, GridDepth)
 };
