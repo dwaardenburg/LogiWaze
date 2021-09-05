@@ -404,7 +404,7 @@
                 var speed = beta ? '<tr class="detailed-routeinfo"><td colspan="2"><span class="slow"></span><span class="slidecontainer"><input type="range" min="d /1" max="100" value="50" class="slider" oninput="updateSlider(this)"></span><span class="fast"></span></td></tr>' : '';
 
                 var FoxholeRouter = {
-                    summaryTemplate: '<table class="route-summary"><tr class="route-summary-header"><td><img src=\'{name}.webp\' /><span>{name}</span><span style=\'font-weight: bold; margin-left: 1em\' class=\'summary-routeinfo\'>{distance}</span>'
+                    summaryTemplate: '<table class="route-summary"><tr class="route-summary-header"><td><img src=\'images/{name}.webp\' /><span>{name}</span><span style=\'font-weight: bold; margin-left: 1em\' class=\'summary-routeinfo\'>{distance}</span>'
                         .concat(!window.beta ? "" : '<div class="audio-controls detailed-routeinfo"><button class="play-button" style="pointer-events: auto" onclick="window.narrateDirections()">'.concat(playbutton).concat('</button></div>')).concat('</td></tr>').concat(speed).concat('<tr><td class="no-click">{time}</td></tr></table>'),
                     TownHalls: L.layerGroup().addTo(mymap),
                     RegionLabels: RegionLabels,
@@ -815,12 +815,12 @@
                             let marker = this.marker, marker_shadow = this.marker_shadow;
                             if (marker == null) {
                                 this.marker = marker = new Image();
-                                marker.src = "marker-icon.png";
+                                marker.src = "images/marker-icon.png";
                                 marker.onload = function () {
                                     marker_loaded = true; if (marker_shadow_loaded && marker_loaded) drawMarkers(ctx);
                                 }
                                 this.marker_shadow = marker_shadow = new Image();
-                                marker_shadow.src = "marker-shadow.png";
+                                marker_shadow.src = "images/marker-shadow.png";
                                 marker_shadow.onload = function () {
                                     marker_shadow_loaded = true; if (marker_shadow_loaded && marker_loaded) drawMarkers(ctx);
                                 }
@@ -1036,12 +1036,12 @@
                             )
                                 var routes = [];
                             else
-                                var routes = [route_builder("Shortest Route", path, waypoints)];
+                                var routes = [route_builder("shortest-route", path, waypoints)];
 
                             if (wardenPath != null)
-                                routes.unshift(route_builder("Warden Route", wardenPath, waypoints));
+                                routes.unshift(route_builder("warden-route", wardenPath, waypoints));
                             if (colonialPath != null)
-                                routes.unshift(route_builder("Colonial Route", colonialPath, waypoints));
+                                routes.unshift(route_builder("colonial-route", colonialPath, waypoints));
 
                             call(null, routes);
                         }

@@ -138,7 +138,7 @@ define(['leaflet', 'intersects'],
                                 c.pendingLoad++;
                                 var img = { image: new Image() };
                                 c.t.imageCache[j.icon] = img;
-                                img.image.src = 'MapIcons/'.concat(j.icon);
+                                img.image.src = 'images/MapIcons/'.concat(j.icon);
                                 img.image.onload = function () {
                                     --c.pendingLoad;
                                 };
@@ -224,7 +224,7 @@ define(['leaflet', 'intersects'],
                                 var img = { image: new Image() };
                                 img.callbacks = [makeRenderCallback(c.t, icon, c.ctx, img, lx, ly, lw, lh, c.tile, j.glow, shadow)];
                                 c.t.imageCache[icon] = img;
-                                img.image.src = 'MapIcons/'.concat(j.icon);
+                                img.image.src = 'images/MapIcons/'.concat(j.icon);
                                 img.image.onload = makeOnLoadCallback(icon, c.t);
                             }
                         }
@@ -252,7 +252,7 @@ define(['leaflet', 'intersects'],
                             c.t.loadIcons(c);
                             c.img = new Image();
                             var scale = Math.pow(2, Math.max(0, c.coords.z - c.t.max_native_zoom));
-                            c.img.src = 'Tiles/'.concat(Math.min(c.coords.z, c.t.max_native_zoom)).concat('_').concat(Math.floor(c.coords.x / scale)).concat('_').concat(Math.floor(c.coords.y / scale)).concat('.webp');
+                            c.img.src = 'images/Tiles/'.concat(Math.min(c.coords.z, c.t.max_native_zoom)).concat('_').concat(Math.floor(c.coords.x / scale)).concat('_').concat(Math.floor(c.coords.y / scale)).concat('.webp');
                             c.phase_2_complete = false;
                             c.phase_3_complete = false;
                             c.img.onload = () => c.t.yield(c, 2);
