@@ -1,7 +1,11 @@
-module.exports = 
-{
-//	target: "es5"
-/*	"externals": {
-		"leaflet": "L"
-	}*/
+const path = require('path');
+
+module.exports = {
+   entry: {
+     app: './src/index.js',
+   },
+   output: {
+	   filename: 'FoxholeRouter.js',
+	   path: __dirname
+	}
 }
