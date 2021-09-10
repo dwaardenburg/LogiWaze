@@ -49,8 +49,6 @@ define(null, function () {
                         var text = direction.text.split(/\|/)[1];
                         var border = instructions[i].border;
 
-
-
                         var delta = i == 0 ? 0.0 : (instructions[i - 1].distance / 35000.0) * 3600.0;
                         if (border) {
                             Narrator.instructions.push({ time: delta, text: "You are approaching a border crossing, check your radio" });
