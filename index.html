@@ -71,11 +71,11 @@
                 maxBounds: L.latLngBounds(L.latLng(-384, -256), L.latLng(128, 512)),
 
             });
+        L.imageOverlay("images/Background.webp", [[-200 - 128, -345 + 128], [200 - 128, 335 + 128]], { pane: 'imagebg', opacity: 0.4 }).addTo(mymap);
 
         var pane = mymap.createPane('imagebg');
         mymap.getPane('imagebg').style.zIndex = 50;
-        L.imageOverlay("images/Background.webp", [[-256 - 64 - 32, -256 - 7], [128 - 32, 512 + 7]], { pane: 'imagebg' }).addTo(mymap);
-        
+
         var shard = urlParams.get('shard2') != null ? "2" : urlParams.get('shard');
 
         var APIManager = API.Create();
