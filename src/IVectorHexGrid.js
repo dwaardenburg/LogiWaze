@@ -44,12 +44,12 @@ define(['leaflet', 'intersects'],
                 ctx.strokeStyle = '#303030';
                 ctx.opacity = .8;
 
-                for (var j of u.sources) {
+                for (var source of u.sources) {
 
-                    var label_w = j.size.width * zoom * hd_ratio + shadow * 2;
-                    var label_h = j.size.height * zoom * hd_ratio + shadow * 2;
-                    var label_x = j.x * zoom * hd_ratio - coords.x * tile.width - label_w - shadow;
-                    var label_y = j.y * zoom * hd_ratio - coords.y * tile.height - label_h - shadow;
+                    var label_w = source.size.width * zoom * hd_ratio + shadow * 2;
+                    var label_h = source.size.height * zoom * hd_ratio + shadow * 2;
+                    var label_x = source.x * zoom * hd_ratio - coords.x * tile.width - label_w - shadow;
+                    var label_y = source.y * zoom * hd_ratio - coords.y * tile.height - label_h - shadow;
 
 
                     if (intersects.boxBox(0, 0, tile.width, tile.height, label_x, label_y, label_w, label_h))

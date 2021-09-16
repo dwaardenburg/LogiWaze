@@ -1,8 +1,8 @@
-﻿define(['leaflet', 'json-loader!../Roads.geojson', './geojson-path-finder/index.js', 'leaflet-routing-machine', '../towns.json', 'jquery'],
+﻿define(['leaflet', 'json-loader!../json/Roads.geojson', './geojson-path-finder/index.js', 'leaflet-routing-machine', '../json/towns.json', 'jquery'],
     function (L, Paths, PathFinder, routing_machine, towns) {
 
         return {
-            FoxholeRouter: function (mymap, API, Narrator) {
+            FoxholeRouter: function (mymap, API) {
 
                 function Recase(x) {
                     return x.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase();
@@ -115,26 +115,24 @@
 
                 var renderer = L.canvas({ tolerance: .2 }).addTo(mymap);
 
-                var RegionLabels = VectorTextGrid.Create(8, [128, 128]);
-                var ControlLayer = VectorControlGrid.Create(5, 8, [128, 128], API, .30, .17, GridDepth);
-
+                var RegionLabels = VectorTextGrid.Create(8, [0, 256]);
+                var ControlLayer = VectorControlGrid.Create(8, [0, 256], API, .30, .17, GridDepth);
                 var regions = API.regions;
-                var h = 256 / 7;
-                var w = h * 2 / Math.sqrt(3);
-
-                regions.forEach(region => ControlLayer.addHex(region.x, region.y, w, h, !(region.name in API.mapControl)));
+                var w = 46.545454545 * .5;
+                var h = w * Math.sqrt(3) / 2;
+                for (var i = 0; i < regions.length; i++)
+                    ControlLayer.addHex(256 - regions[i].x, regions[i].y, w, h, !(regions[i].name in API.mapControl));
 
                 var resolveIcon = function (ic) {
                     if (ic.icon == null)
                         return null;
-
-                    if (ic.icon == 56 || ic.icon == 5)
+                    if (ic.icon == 5)
                         icon = 'MapIconStaticBase1';
                     else if (ic.icon == 35)
                         icon = "MapIconSafehouse";
-                    else if (ic.icon == 57 || ic.icon == 6)
+                    else if (ic.icon == 6)
                         icon = 'MapIconStaticBase2';
-                    else if (ic.icon == 58 || ic.icon == 7)
+                    else if (ic.icon == 7)
                         icon = 'MapIconStaticBase3';
                     else if (ic.icon == 27)
                         icon = 'MapIconKeep'
@@ -241,7 +239,7 @@
                 for (var t = 0; t < ks.length; t++) {
                     var th = towns[ks[t]];
                     if (th.major != 1) {
-                        var ownership = API.ownership(th.x + 128, th.y - 128, th.region).ownership;
+                        var ownership = API.ownership(th.x, th.y, th.region).ownership;
                         var control = ownership == "COLONIALS" ? 0 : (ownership == "WARDENS" ? 1 : 2);
                         RegionLabels.addText(Recase(ks[t]), ks[t], control, th.x, th.y, 5, 9, '#bbbbbb');
                     }
@@ -250,7 +248,7 @@
                 for (var t = 0; t < ks.length; t++) {
                     var th = towns[ks[t]];
                     if (th.major == 1) {
-                        var ownership = API.ownership(th.x + 128, th.y - 128, th.region).ownership;
+                        var ownership = API.ownership(th.x, th.y, th.region).ownership;
                         var control = ownership == "COLONIALS" ? 0 : (ownership == "WARDENS" ? 1 : 2);
                         RegionLabels.addText(Recase(ks[t]), ks[t], control, th.x, th.y, 3, 9, '#fff');
                     }
@@ -260,13 +258,13 @@
                     RegionLabels.addText(Recase(API.regions[i].realName), API.regions[i].realName, 4, API.regions[i].x, API.regions[i].y, 0, 3, '#ffffff', 2.5);
 
 
-                for (var credit of [ // wow these are all wrong now
-                    { text: "Hayden Grove", x: (139.079-128) * 0.90726470872655477280009094078879, y: (-155.292 + 128) * 0.90726470872655477280009094078879 },
-                    { text: "Steely Phil Bridge", x: (18.18-128) * 0.90726470872655477280009094078879, y: (-161.439 + 128) * 0.90726470872655477280009094078879 },
-                    { text: "Icanari Killing Fields", x: (134.071 - 128) * 0.90726470872655477280009094078879, y: (-143.104 + 128) * 0.90726470872655477280009094078879 },
-                    { text: "Kastow Peak", x: (124.817 -128)* 0.90726470872655477280009094078879, y: (-122.72 + 128) * 0.90726470872655477280009094078879},
-                    { text: "DragonZephyr Col", x: (119.176-128) * 0.90726470872655477280009094078879, y: (-83.464 + 128) *0.90726470872655477280009094078879},
-                    { text: "Skaj Sound", x: (49.826-128)*0.90726470872655477280009094078879, y:(-102.048+128)*0.90726470872655477280009094078879}]
+                for (var credit of [
+                    { text: "Hayden Grove", x: 139.079, y: -155.292 },
+                    { text: "Steely Phil Bridge", x: 18.18, y: -161.439 },
+                    { text: "Icanari Killing Fields", x: 134.071, y: -143.104 },
+                    { text: "Kastow Peak", x: 124.817, y: -122.72 },
+                    { text: "DragonZephyr Col", x: 119.176, y: -83.464 },
+                    { text: "Skaj Sound", x: 49.826, y: -102.048 }]
                 )
                     RegionLabels.addText(Recase(credit.text), credit.text, control, credit.x, credit.y, 7, 9, '#DAA520');
 
@@ -367,9 +365,6 @@
                 });
 
                 mymap.on('resize', (e) => resizer());
-
-                //mymap.on('dragend', (e) => resizer());
-
                 mymap.on('moveend', (e) => resizer());
 
                 var playbutton = '<svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:a="http://ns.adobe.com/AdobeSVGViewerExtensions/3.0/" x="0px" y="0px" width="32px" height="32px" viewBox="20 20 173.7 173.7" enable-background="new 0 0 213.7 213.7" xml:space="preserve"><polygon class="triangle" id="XMLID_18_" fill="none" stroke-width="15" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10" points="73.5,62.5 148.5,105.8 73.5,149.1 "/></svg>'
@@ -377,7 +372,7 @@
                 var speed = beta ? '<tr class="detailed-routeinfo"><td colspan="2"><span class="slow"></span><span class="slidecontainer"><input type="range" min="d /1" max="100" value="50" class="slider" oninput="updateSlider(this)"></span><span class="fast"></span></td></tr>' : '';
 
                 var FoxholeRouter = {
-                    summaryTemplate: '<table class="route-summary"><tr class="route-summary-header"><td><img src=\'{name}.webp\' /><span>{name}</span><span style=\'font-weight: bold; margin-left: 1em\' class=\'summary-routeinfo\'>{distance}</span>'
+                    summaryTemplate: '<table class="route-summary"><tr class="route-summary-header"><td><img src=\'images/{name}.webp\' /><span>{name}</span><span style=\'font-weight: bold; margin-left: 1em\' class=\'summary-routeinfo\'>{distance}</span>'
                         .concat(!window.beta ? "" : '<div class="audio-controls detailed-routeinfo"><button class="play-button" style="pointer-events: auto" onclick="window.narrateDirections()">'.concat(playbutton).concat('</button></div>')).concat('</td></tr>').concat(speed).concat('<tr><td class="no-click">{time}</td></tr></table>'),
                     TownHalls: L.layerGroup().addTo(mymap),
                     RegionLabels: RegionLabels,
@@ -385,12 +380,12 @@
                     Fuel: L.layerGroup().addTo(mymap),
                     Salvage: L.layerGroup().addTo(mymap),
                     Sulfur: L.layerGroup().addTo(mymap),
-                    VectorControlGrid: ControlLayer,
                     API: API,
                     Roads: JSONRoads,
 
+                    //Icons: Icons,
+
                     // virtual layers
-                    BoringFont: L.layerGroup().addTo(mymap),
                     Borders: L.layerGroup().addTo(mymap),
                     RoadsCanvas: L.layerGroup().addTo(mymap),
                     MapControl: L.layerGroup().addTo(mymap),
@@ -438,18 +433,6 @@
                         compact: null,
                         weightFn: function (a, b, props) { var dx = a[0] - b[0]; var dy = a[1] - b[1]; return Math.sqrt(dx * dx + dy * dy); }
                     }) : null,
-
-                    showBoringFont: function () {
-                        RegionLabels.boring = true;
-                        RegionLabels.recalculateSizes();
-                        RegionLabels.redraw();
-                    },
-
-                    hideBoringFont: function () {
-                        RegionLabels.boring = false;
-                        RegionLabels.recalculateSizes();
-                        RegionLabels.redraw();
-                    },
 
                     hideLabels: function () {
                         RegionLabels.draw = false;
@@ -787,12 +770,12 @@
                             let marker = this.marker, marker_shadow = this.marker_shadow;
                             if (marker == null) {
                                 this.marker = marker = new Image();
-                                marker.src = "marker-icon.png";
+                                marker.src = "images/marker-icon.png";
                                 marker.onload = function () {
                                     marker_loaded = true; if (marker_shadow_loaded && marker_loaded) drawMarkers(ctx);
                                 }
                                 this.marker_shadow = marker_shadow = new Image();
-                                marker_shadow.src = "marker-shadow.png";
+                                marker_shadow.src = "images/marker-shadow.png";
                                 marker_shadow.onload = function () {
                                     marker_shadow_loaded = true; if (marker_shadow_loaded && marker_loaded) drawMarkers(ctx);
                                 }
@@ -802,10 +785,6 @@
                                 setTimeout(() => drawMarkers(ctx), 0);
 
                         }
-                    },
-
-                    narrate: function () {
-                        Narrator.giveDirections(FoxholeRouter.currentRoute.instructions);
                     },
 
                     cardinalDirections: ['East', 'Northeast', 'North', 'Northwest', 'West', 'Southwest', 'South', 'Southeast'],
@@ -1008,12 +987,12 @@
                             )
                                 var routes = [];
                             else
-                                var routes = [route_builder("Shortest Route", path, waypoints)];
+                                var routes = [route_builder("shortest-route", path, waypoints)];
 
                             if (wardenPath != null)
-                                routes.unshift(route_builder("Warden Route", wardenPath, waypoints));
+                                routes.unshift(route_builder("warden-route", wardenPath, waypoints));
                             if (colonialPath != null)
-                                routes.unshift(route_builder("Colonial Route", colonialPath, waypoints));
+                                routes.unshift(route_builder("colonial-route", colonialPath, waypoints));
 
                             call(null, routes);
                         }

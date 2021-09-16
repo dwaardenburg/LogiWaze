@@ -48,9 +48,6 @@ define(['leaflet', 'leaflet-routing-machine'], function (L, R) {
                 (collapsible ? 'leaflet-routing-collapsible ' : '') +
                 this.options.containerClassName);
 
-            
-
-
             this._altContainer = this.createAlternativesContainer();
             this._container.appendChild(this._altContainer);
             L.DomEvent.disableClickPropagation(this._container);
@@ -225,10 +222,5 @@ define(['leaflet', 'leaflet-routing-machine'], function (L, R) {
             this.fire('routeselected', routes);
         }
     });
-
-    /*return {
-        Itinerary: (Options) => new prototype(Options),
-        prototype: prototype
-    };*/
 });
 

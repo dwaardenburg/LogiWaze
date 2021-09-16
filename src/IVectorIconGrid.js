@@ -40,7 +40,6 @@ define(['leaflet', 'intersects'],
                         }
                         else
                             ctx.drawImage(img.image, lx, ly, lw, lh);
-                        //ctx.drawImage(img.image, lx, ly, lw, lh);
                         if (--tile.pendingLoad == 0) {
                             setTimeout(() => done(null, tile), 0);
                             delete img.callbacks;
@@ -67,26 +66,26 @@ define(['leaflet', 'intersects'],
 
                 const shadowSize = 20;
 
-                for (var j of this.sources) {
+                for (var source of this.sources) {
 
-                    if (coords.z >= j.zoomMin && coords.z < j.zoomMax && j.icon != null && !(j.icon in this.disabledIcons)) {
+                    if (coords.z >= source.zoomMin && coords.z < source.zoomMax && source.icon != null && !(source.icon in this.disabledIcons)) {
 
                         var scale = raw_scale;
-                        let shadow = j.glow ? shadowSize * hd_ratio * scale * zoom / max : 0;
+                        let shadow = source.glow ? shadowSize * hd_ratio * scale * zoom / max : 0;
 
-                        var label_w = j.size.width * zoom * scale * hd_ratio;
-                        var label_h = j.size.height * zoom * scale * hd_ratio;
-                        var label_x = j.x * zoom * hd_ratio - coords.x * tile.width - label_w * .5;
-                        var label_y = j.y * zoom * hd_ratio - coords.y * tile.height - label_h * .5;
+                        var label_w = source.size.width * zoom * scale * hd_ratio;
+                        var label_h = source.size.height * zoom * scale * hd_ratio;
+                        var label_x = source.x * zoom * hd_ratio - coords.x * tile.width - label_w * .5;
+                        var label_y = source.y * zoom * hd_ratio - coords.y * tile.height - label_h * .5;
 
 
                         if (intersects.boxBox(0, 0, tile.width, tile.height, label_x - 2.0 * shadow, label_y - 2.0 * shadow, label_w + 4.0 * shadow, label_h + 4.0 * shadow)) {
-                            var icon = j.icon;
+                            var icon = source.icon;
                             var lx = label_x, ly = label_y, lw = label_w, lh = label_h;
                             if (icon in this.imageCache) {
                                 var img = this.imageCache[icon];
                                 if (img.image.complete) {
-                                    if (j.glow) {
+                                    if (source.glow) {
                                         ctx.filter = "brightness(0.5) sepia(1) hue-rotate(296deg) saturate(10000%) blur(".concat(shadow).concat("px)"); // blur(10px)
                                         ctx.drawImage(img.image, lx, ly, lw, lh);
                                         ctx.drawImage(img.image, lx, ly, lw, lh);
@@ -97,16 +96,16 @@ define(['leaflet', 'intersects'],
                                         ctx.drawImage(img.image, lx, ly, lw, lh);
                                 }
                                 else {
-                                    img.callbacks.push(makeRenderCallback(this, icon, ctx, img, lx, ly, lw, lh, done, tile, j.glow, shadow));
+                                    img.callbacks.push(makeRenderCallback(this, icon, ctx, img, lx, ly, lw, lh, done, tile, source.glow, shadow));
                                     tile.pendingLoad++;
                                 }
                             }
                             else {
                                 tile.pendingLoad++;
                                 var img = { image: new Image() };
-                                img.callbacks = [makeRenderCallback(this, icon, ctx, img, lx, ly, lw, lh, done, tile, j.glow, shadow)];
+                                img.callbacks = [makeRenderCallback(this, icon, ctx, img, lx, ly, lw, lh, done, tile, source.glow, shadow)];
                                 this.imageCache[icon] = img;
-                                img.image.src = 'MapIcons/'.concat(j.icon);
+                                img.image.src = '../images/MapIcons/'.concat(source.icon);
                                 img.image.onload = makeOnLoadCallback(icon, this);
                             }
                         }

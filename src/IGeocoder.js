@@ -1,4 +1,4 @@
-define(['leaflet', '../towns.json'], function (L, towns) {
+define(['leaflet', '../json/towns.json'], function (L, towns) {
     return {
 
         FoxholeGeocoder: function (API) {

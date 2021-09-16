@@ -2,12 +2,9 @@
 
 global.L = require('leaflet');
 global.$ = require('jquery');
-//require('jquery-ui');
-
-
 
 global.VectorControlGrid = {
-    Create: (MaxNativeZoom, MaxZoom, Offset, API, RoadWidth, ControlWidth, GridDepth) => require('./IVectorControlGrid.js').Create(MaxNativeZoom, MaxZoom, Offset, API, RoadWidth, ControlWidth, GridDepth)
+    Create: (MaxZoom, Offset, API, RoadWidth, ControlWidth, GridDepth) => require('./IVectorControlGrid.js').Create(MaxZoom, Offset, API, RoadWidth, ControlWidth, GridDepth)
 };
 
 global.VectorTextGrid = {
@@ -15,7 +12,7 @@ global.VectorTextGrid = {
 };
 
 global.FoxholeRouter = {
-    Create: (mymap, API, Narrator) => new require('./IRouter.js').FoxholeRouter(mymap, API, Narrator)
+    Create: (mymap, API) => new require('./IRouter.js').FoxholeRouter(mymap, API)
 };
 
 global.API = {
@@ -24,14 +21,6 @@ global.API = {
 
 global.FoxholeGeocoder = {
     Create: (API) => require('./IGeocoder.js').FoxholeGeocoder(API)
-};
-
-global.Narrator = {
-    Create: () => require('./INarrator.js').Narrator()
-};
-
-global.YouTube = {
-    Create: () => require('./IYouTube.js').YouTube()
 };
 
 global.Panel = {

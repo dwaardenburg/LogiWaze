@@ -23,7 +23,7 @@ npm install
 
 * build the project
 ```
-npm run build
+npm run webpack
 ```
 ### Updating towns
 
@@ -34,7 +34,7 @@ Execute the town halls script when all regions are available (if regions are off
 
 Rebuild the project
 ```
-npm run build
+npm run webpack
 ```
 
 ### Editing roads

@@ -1,0 +1,838 @@
+body {
+    -webkit-user-select: none; /* Chrome all / Safari all */
+    -moz-user-select: none; /* Firefox all */
+    -ms-user-select: none; /* IE 10+ */
+    user-select: none; /* Likely future */
+}
+
+
+.leaflet-routing-alt-minimized table tr td span.summary-routeinfo div
+{
+    display: none;
+}
+
+/*.route-summary-header td {
+    background-color: rgba(51, 51, 51, .3);
+    border-radius: 4px;
+}*/
+
+.roadtier {
+    line-height: 16px;
+    font-size: 10px;
+    background: #ccc;
+    border-radius: 3px;
+    height: 16px;
+    margin: 3px 0;
+    padding: 1px;
+    box-sizing: border-box;
+    border: 1px solid #333;
+}
+
+    .roadtier div {
+        box-sizing: border-box;
+        display: inline-block;
+        height: 100%;
+        border-radius: 3px;
+        /*text-align: right;*/
+        text-indent: 2px;
+    }
+
+.roadtier div span {
+    position: relative;
+    top: -1px;
+    display: inline-block;
+    vertical-align: middle;
+}
+
+.detailed-routeinfo {
+    margin-top: 4px;
+}
+
+.leaflet-routing-alternatives-container {
+    flex-grow: 1;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='50' height='50' viewBox='0 0 100 100'%3E%3Cg fill-rule='evenodd'%3E%3Cg fill='%23888888' fill-opacity='0.4'%3E%3Cpath opacity='.5' d='M96 95h4v1h-4v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4H0v-1h15v-9H0v-1h15v-9H0v-1h15v-9H0v-1h15v-9H0v-1h15v-9H0v-1h15v-9H0v-1h15v-9H0v-1h15v-9H0v-1h15V0h1v15h9V0h1v15h9V0h1v15h9V0h1v15h9V0h1v15h9V0h1v15h9V0h1v15h9V0h1v15h9V0h1v15h4v1h-4v9h4v1h-4v9h4v1h-4v9h4v1h-4v9h4v1h-4v9h4v1h-4v9h4v1h-4v9h4v1h-4v9zm-1 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-9-10h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm9-10v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-9-10h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm9-10v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-9-10h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm9-10v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-9-10h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9z'/%3E%3Cpath d='M6 5V0H5v5H0v1h5v94h1V6h94V5H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+}
+
+.leaflet-routing-collapse-btn {
+    border-top-left-radius: 4px;
+    border-bottom-left-radius: 4px;
+}
+
+.leaflet-routing-container, .leaflet-routing-error {
+    width: 332px;
+    position: relative;
+    left: 0;
+    background-color: #fff;
+    padding-top: 4px;
+    transition: all .5s ease;
+    box-sizing: border-box;
+}
+
+.leaflet-control-container .leaflet-routing-container-hide {
+    left: 332px;
+}
+
+.leaflet-routing-container h2 {
+    font-size: 14px;
+}
+
+.leaflet-routing-container h3 {
+    font-size: 12px;
+    font-weight: 400;
+}
+
+.leaflet-routing-collapsible {
+    height: calc(100% - 20px);
+    margin-top: -10px;
+    margin-bottom: 20px;
+    background-color: #424f60;
+    box-shadow: 0 0 4px 4px rgba(0,0,0,.6) !important;
+    opacity: 1 !important;
+}
+
+.leaflet-routing-alt, .leaflet-routing-geocoders, .leaflet-routing-error {
+    padding: 6px;
+    margin-top: 2px;
+    /*border-bottom: 1px solid #ccc;*/
+    transition: all .2s ease;
+}
+
+.leaflet-routing-container {
+    height: calc(100% - 20px);
+    display: flex;
+    flex-flow: column;
+    padding-bottom: 2px;
+}
+
+.leaflet-routing-alternatives-container::-webkit-scrollbar {
+    display: none;
+}
+
+.leaflet-routing-alternatives-container {
+    overflow-y: auto;
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+
+.route-summary tr td {
+    color: white;
+    text-shadow: 0 0 4px #000,0 0 4px #000,0 0 4px #000;
+}
+
+.detailed-routeinfo {
+    color: #ddd;
+    text-shadow: 0 0 2px #000,0 0 2px #000,0 0 2px #000;
+}
+
+.leaflet-bar .leaflet-routing-alt:last-child {
+    border-bottom: none;
+}
+
+.leaflet-routing-alt-minimized {
+    color: #888;
+    max-height: 64px;
+    overflow: hidden;
+    cursor: pointer;
+}
+
+.leaflet-routing-alt table {
+    border-collapse: collapse;
+}
+
+.leaflet-routing-alt::-webkit-scrollbar {
+    width: 8px;
+}
+
+.leaflet-routing-alt::-webkit-scrollbar-track {
+    border-radius: 2px;
+    background-color: #eee;
+}
+
+.leaflet-routing-alt::-webkit-scrollbar-thumb {
+    border-radius: 2px;
+    background-color: #888;
+}
+
+.leaflet-routing-geocoders button {
+    width: 50px;
+    height: 50px;
+}
+
+.leaflet-routing-icon-continue {
+    background-position: 0 0;
+}
+
+.leaflet-routing-icon-sharp-right {
+    background-position: -20px 0;
+}
+
+.leaflet-routing-icon-turn-right {
+    background-position: -40px 0;
+}
+
+.leaflet-routing-icon-bear-right {
+    background-position: -60px 0;
+}
+
+.leaflet-routing-icon-u-turn {
+    background-position: -80px 0;
+}
+
+.leaflet-routing-icon-sharp-left {
+    background-position: -100px 0;
+}
+
+.leaflet-routing-icon-turn-left {
+    background-position: -120px 0;
+}
+
+.leaflet-routing-icon-bear-left {
+    background-position: -140px 0;
+}
+
+.leaflet-routing-icon-depart {
+    background-position: -160px 0;
+}
+
+.leaflet-routing-icon-enter-roundabout {
+    background-position: -180px 0;
+}
+
+.leaflet-routing-icon-arrive {
+    background-position: -200px 0;
+}
+
+.leaflet-routing-icon-via {
+    background-position: -220px 0;
+}
+
+.leaflet-routing-geocoders div {
+    padding: 4px 0;
+}
+
+.leaflet-routing-geocoders input {
+    width: 303px;
+    width: calc(100% - 4px);
+    line-height: 1.67;
+    border: 1px solid #ccc;
+}
+
+.leaflet-routing-geocoders button {
+    font: bold 18px Renner;
+    color: #ddd;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    background-color: #555;
+    margin: 0;
+    margin-right: 3px;
+    float: right;
+    cursor: pointer;
+    transition: background-color .2s ease;
+}
+
+button.leaflet-routing-add-waypoint {
+    padding: 0;
+}
+
+.leaflet-routing-add-waypoint:after {
+    content: '+';
+    font-weight: 400;
+    font-size: 30px;
+    line-height: 40px
+}
+
+.leaflet-routing-reverse-waypoints:after {
+    font-weight: 400;
+    content: '\21c5';
+    font-size: 30px;
+    line-height: 50px
+}
+
+.leaflet-routing-geocoders button:hover {
+    background-color: #eee;
+}
+
+.leaflet-routing-geocoders input, .leaflet-routing-remove-waypoint, .leaflet-routing-geocoder {
+    position: relative;
+}
+
+.leaflet-routing-geocoder-result {
+    font: 12px/1.5 Renner;
+    position: absolute;
+    max-height: 0;
+    overflow: hidden;
+    transition: all .5s ease;
+    z-index: 1000;
+}
+
+    .leaflet-routing-geocoder-result table {
+        width: 100%;
+        /*border: 1px solid #ccc;*/
+        border-radius: 0 0 4px 4px;
+        background-color: #fff;
+        cursor: pointer;
+    }
+
+.leaflet-routing-geocoder-result-open {
+    max-height: 800px;
+}
+
+.leaflet-routing-geocoder-no-results {
+    font-style: italic;
+    color: #888;
+}
+
+.leaflet-routing-remove-waypoint {
+    background-color: transparent;
+    display: inline-block;
+    vertical-align: middle;
+    cursor: pointer;
+}
+
+    .leaflet-routing-remove-waypoint:after {
+        position: absolute;
+        display: block;
+        width: 15px;
+        height: 1px;
+        z-index: 1;
+        right: 1px;
+        top: 3px;
+        bottom: 0;
+        margin: auto;
+        padding: 2px;
+        font-size: 18px;
+        font-weight: 700;
+        content: "\00d7";
+        text-align: center;
+        cursor: pointer;
+        color: #ccc;
+        background: #fff;
+        padding-bottom: 16px;
+        margin-top: -16px;
+        padding-right: 4px;
+        line-height: 1;
+    }
+
+    .leaflet-routing-remove-waypoint:hover {
+        color: #000;
+    }
+
+.leaflet-routing-instruction-distance {
+    width: 48px;
+}
+
+.leaflet-routing-collapse-btn {
+    cursor: pointer;
+    pointer-events: auto;
+    background-color: #B0B0B0;
+    border: 1px solid #555555FB;
+    border-collapse: collapse;
+    box-shadow: 0 0 4px 4px rgba(0,0,0,.6) !important;
+    clip-path: inset(-16px 0px -16px -16px);
+    position: absolute;
+    top: 50px;
+    width: 50px;
+    height: 120px;
+    left: -52px;
+    opacity: .85;
+    border-right: none !important;
+    font-size: 24px;
+    color: #ccc;
+    font-weight: 700;
+    border-radius: 4px unset unset 4px !important;
+}
+
+.leaflet-control-zoom {
+    background-color: #B0B0B0;
+    border: 1px solid #555555FB;
+    border-collapse: collapse;
+    box-shadow: 0 0 4px 4px rgba(0,0,0,.6) !important;
+    opacity: .85;
+    font-size: 24px;
+    font-weight: 700;
+    /*border-radius: 4px unset unset 4px !important;*/
+}
+
+    .leaflet-control-zoom a {
+        background-color: #B0B0B0 !important;
+        border-collapse: collapse;
+        font-size: 24px;
+        font-weight: 700;
+        color: #444;
+        text-shadow: 0px 0px 2px rgba(.3,.3,.3,.5);
+    }
+
+
+.leaflet-routing-collapse-btn::after {
+    content: 'Tools';
+    transform: rotate(270deg) translate(-25px, 0);
+    display: inline-block;
+    position: relative;
+    color: #444;
+    text-shadow: 0px 0px 2px rgba(.3,.3,.3,.5);
+}
+
+.leaflet-routing-collapse-btn::before {
+    content: '';
+    width: 1.5em;
+    height: 1.5em;
+    display: inline-block;
+    position: relative;
+    margin: .2em;
+    background-image: url(../images/tools.svg);
+}
+
+@font-face {
+    font-family: 'Celtic';
+    src: url(../fonts/Celtic.woff2);
+}
+
+@font-face {
+    font-family: 'Roman';
+    src: url(../fonts/Roman.woff2);
+}
+
+@font-face {
+    font-family: 'Italic';
+    src: url(../fonts/Italic.woff2);
+}
+
+@font-face {
+    font-family: 'Renner';
+    src: url(../fonts/Renner.ttf) format("truetype");
+    font-weight: 400;
+    font-style: normal;
+}
+
+.town-neutral {
+    text-transform: uppercase;
+    font-family: Italic;
+}
+
+.town-warden {
+    text-transform: uppercase;
+    font-family: Celtic;
+}
+
+.town-colonial {
+    text-transform: uppercase;
+    font-family: Roman;
+    letter-spacing: .1em;
+}
+
+.turn-right {
+    fill: blue;
+    width: 24px;
+    height: 24px;
+    background-image: url(../images/turn-right.svg);
+}
+
+.turn-left {
+    fill: blue;
+    width: 24px;
+    height: 24px;
+    background-image: url(../images/turn-left.svg);
+}
+
+.veer-right {
+    fill: blue;
+    width: 24px;
+    height: 24px;
+    background-image: url(../images/veer-right.svg);
+}
+
+.veer-left {
+    fill: blue;
+    width: 24px;
+    height: 24px;
+    background-image: url(../images/veer-left.svg);
+}
+
+.turn-about {
+    fill: blue;
+    width: 24px;
+    height: 24px;
+    background-image: url(../images/turn-about.svg);
+}
+
+.continue {
+    fill: blue;
+    width: 24px;
+    height: 24px;
+    background-image: url(../images/continue.svg);
+}
+
+.compass {
+    fill: #444857;
+    width: 24px;
+    height: 24px;
+    background-image: url(../images/compass.svg);
+}
+
+.layer-icon {
+    max-width: 16px;
+    max-height: 16px;
+    margin-right: 4px;
+}
+
+.leaflet-marker-draggable {
+    z-index: -10000;
+}
+
+.route-summary button {
+    background: #444857;
+    color: white;
+    font-weight: 700;
+    border-radius: 3px;
+    border: 2px solid transparent;
+    font-size: 18px;
+    margin: 0 4px;
+}
+
+.play-button {
+    display: inline-block;
+    transition: all .5s ease;
+}
+
+    .play-button .triangle {
+        transition: all .7s ease-in-out;
+        stroke-dasharray: 240;
+        stroke-dashoffset: 480;
+        stroke: #FFFFFF;
+        transform: translateY(0);
+    }
+
+    .play-button svg {
+        width: 22px;
+        height: 22px;
+    }
+
+    .play-button:hover .triangle {
+        stroke-dashoffset: 0;
+        opacity: 1;
+        stroke: #FFFFFF;
+        animation: none nudge .7s ease-in-out;
+    }
+
+.route-summary-header {
+    pointer-events: auto;
+    padding: 4px 0;
+    line-height: 38px;
+}
+
+.route-summary button:hover {
+    opacity: 1;
+    transition: ease-in .2s;
+    background-color: #555968;
+}
+
+.audio-controls {
+    transform: translateY(5px);
+    height: 28px;
+    margin-left: auto;
+    display: inline;
+    float: right;
+    vertical-align: middle;
+    display: table-cell;
+    vertical-align: middle;
+}
+
+.vehicle-speed-panel {
+    width: 100%;
+}
+
+.no-click, .vehicle-speed-panel {
+    pointer-events: none !important;
+}
+
+.route-summary {
+    margin-bottom: 6px !important;
+}
+
+.vehicle-speed-panel .fast-truck {
+    height: 28px;
+    margin: 0 4px;
+    vertical-align: middle;
+    filter: brightness(100%) saturate(100);
+}
+
+.vehicle-speed-panel .slow-truck {
+    height: 28px;
+    margin: 0 4px;
+    vertical-align: middle;
+    filter: brightness(90%) sepia(25%) saturate(90);
+}
+
+.vehicle-speed-panel .slowest-truck {
+    height: 28px;
+    margin: 0 4px;
+    vertical-align: middle;
+    /*filter: brightness(90%) sepia(25%) saturate(90);*/
+}
+
+.route-summary {
+    border: 0;
+    width: 100%;
+}
+
+    .route-summary img {
+        margin: 0 .5em;
+        width: 32px;
+        height: 32px;
+        vertical-align: middle;
+    }
+
+.leaflet-control-container .leaflet-routing-container-hide {
+    position: relative !important;
+}
+
+.leaflet-control-attribution {
+    display: none;
+}
+
+#map-frame {
+    opacity: 0;
+    transition: opacity 3s;
+}
+
+#loader-holder {
+    align-items: center;
+    justify-content: center;
+    opacity: 1;
+    transition: opacity .5s;
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    top: calc(50% - 60px);
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0,0,0,0);
+    z-index: 2;
+    cursor: pointer;
+    color: white;
+}
+
+@keyframes fadeOutAnimation {
+    0% {
+        opacity: 1;
+    }
+
+    100% {
+        opacity: 0;
+    }
+}
+
+@keyframes fadeInAnimation {
+    0% {
+        opacity: 0;
+    }
+
+    100% {
+        opacity: 1;
+    }
+}
+
+.leaflet-routing-alt-minimized .detailed-routeinfo {
+    display: none;
+}
+
+.leaflet-routing-alt table {
+    font-size: small;
+    border-spacing: 0;
+    padding: 0;
+    margin: 0;
+}
+
+.leaflet-container {
+    font-family: Renner;
+}
+
+html {
+    font-family: Renner;
+}
+
+.leaflet-zoom-anim .leaflet-zoom-animated {
+    transition: ease-in-out;
+    transition-duration: .1s;
+}
+
+.leaflet-routing-container {
+    border: 1px solid #555555FB !important;
+    border-right: none !important;
+    border-collapse: collapse !important;
+    border-radius: 4px unset unset 4px !important;
+}
+
+.leaflet-routing-container, .leaflet-control-layers {
+    opacity: .85;
+}
+
+.logo {
+    position: absolute;
+    left: 50%;
+    align-content: center;
+    vertical-align: middle;
+    transform: translateX(-50%) translateY(25%);
+}
+
+.loader {
+    border: 16px solid #f3f3f3;
+    border-top: 16px solid #3498db;
+    border-radius: 50%;
+    width: 120px;
+    height: 120px;
+    animation: spin 2s linear infinite;
+    margin: auto;
+}
+
+@keyframes spin {
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+.region-name {
+    color: white;
+    text-shadow: 0 0 4px #000,0px 0 4px #000,0px 0 4px #000,0px 0 4px #000;
+    white-space: nowrap;
+    font-family: Italic;
+    font-size: 18px;
+    text-transform: uppercase;
+}
+
+    .region-name span {
+        position: relative;
+        left: -50%;
+        top: -.75em;
+    }
+
+.town-label span {
+    color: white;
+    text-shadow: 0 0 4px #000,0px 0 4px #000,0px 0 4px #000,0px 0 4px #000;
+    white-space: nowrap;
+    position: relative;
+    left: -50%;
+    top: -.75em;
+}
+
+.minor-town-label span {
+    color: #DDDDDD;
+    text-shadow: 0 0 4px #000,0px 0 4px #000,0px 0 4px #000,0px 0 4px #000;
+    white-space: nowrap;
+    position: relative;
+    left: -100%;
+}
+
+.leaflet-top.leaflet-left .leaflet-control {
+    clear: none;
+}
+
+@media only all and ( max-aspect-ratio: 3/4 ), only all and (max-width: 700px) {
+
+    .leaflet-routing-alt {
+        overflow-y: auto;
+    }
+
+    .leaflet-top.leaflet-left {
+        left: unset;
+        right: 10px;
+    }
+
+    .leaflet-control-zoom.leaflet-bar.leaflet-control {
+        float: right;
+    }
+
+    .leaflet-top.leaflet-right {
+        width: 100%;
+        height: unset;
+        top: unset !important;
+        left: 0;
+        right: unset !important;
+        bottom: 0;
+        width: 100%;
+        border-bottom-right-radius: unset;
+        border-bottom-left-radius: unset;
+        border-top-right-radius: unset;
+    }
+
+    .leaflet-routing-container {
+        width: 100%;
+        border-top-right-radius: unset;
+        border-bottom-left-radius: unset;
+        border-bottom-right-radius: unset;
+        height: 140px;
+        margin-bottom: 0px;
+    }
+
+    .leaflet-routing-collapse-btn {
+        width: 5em;
+        left: unset;
+        right: 0;
+        top: -1.9em;
+        height: calc(1.9em - 2px);
+        border-bottom-left-radius: unset;
+        border-bottom-right-radius: unset;
+        clip-path: inset(-16px -16px 0px -16px);
+    }
+
+
+
+        .leaflet-routing-collapse-btn::after {
+            transform: unset;
+            left: .3em;
+            top: -.6em;
+        }
+
+        .leaflet-routing-collapse-btn::before {
+            left: 0;
+            top: 0;
+        }
+
+    .leaflet-routing-alternatives-container {
+        display: none;
+    }
+
+    .leaflet-routing-container.leaflet-routing-container-hide {
+        bottom: -140px;
+        left: unset;
+    }
+}
+
+.copy-paste-url-button, .refresh-button, .screenshot-button, .copy-button {
+    float: left !important;
+}
+
+    .refresh-button div {
+        /* background image here*/
+        width: 25px;
+        height: 25px;
+        margin: auto;
+        background-position: center;
+        background-image: url(../images/refresh.svg);
+        background-repeat: no-repeat;
+    }
+
+    .copy-paste-url-button.dirty div {
+        filter: brightness(0.5) sepia(1) hue-rotate(-45deg) saturate(5);
+    }
+
+    .copy-paste-url-button div {
+        filter: brightness(0.5) sepia(1) hue-rotate(60deg) saturate(5);
+        width: 30px;
+        height: 30px;
+        margin: auto;
+        background-position: center;
+        background-image: url(../images/copy-url.svg);
+        background-repeat: no-repeat;
+    }
+
+
+
+#map-holder {
+    transition: width 2s linear;
+}

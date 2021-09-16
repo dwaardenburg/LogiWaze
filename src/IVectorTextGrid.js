@@ -1,54 +1,32 @@
 define(['leaflet', 'intersects'],
     function (L, intersects) {
 
-        function controlToFont(control, ctx, boring_font) {
-            if (boring_font) {
-                switch (control) {
-
-                    case 0:
-                    case 1:
-                    case 2:
-                    case 3:
-                        ctx.font = '70px Renner';
-                        break;
-                    case 4:
-                        ctx.font = '90px Renner';
-                        break;
-                }
-
+        function controlToFont(control, ctx) {
+            switch (control) {
+                case 0:
+                case 1:
+                case 2:
+                case 3:
+                    ctx.font = '70px Renner';
+                    break;
+                case 4:
+                    ctx.font = '90px Renner';
+                    break;
             }
-            else
-                switch (control) {
-                    case 0:
-                        ctx.font = '54px Roman';
-                        break;
-                    case 1:
-                        ctx.font = '60px Celtic';
-                        break;
-                    case 2:
-                    case 3:
-                        ctx.font = '50px Italic';
-                        break;
-                    case 4:
-                        ctx.font = '80px Italic';
-                        break;
-                }
         };
-
 
         var VectorGridPrototype = L.GridLayer.extend({
             zoomScale: function (zoom) { return .65 * (1 + this.max_zoom - zoom); },
             shadowSize: 20,
             draw: true,
-            boring: true,
             pixelScale: window.devicePixelRatio,
             recalculateSizes: function () {
                 var canvas = L.DomUtil.create('canvas', 'leaflet-tile');
                 ctx = canvas.getContext('2d');
-                for (let k of this.sources) {
-                    controlToFont(k.control, ctx, this.boring);
-                    var size = ctx.measureText(this.boring ? k.original_text : k.text);
-                    k.size = {
+                for (let source of this.sources) {
+                    controlToFont(source.control, ctx);
+                    var size = ctx.measureText(source.original_text);
+                    source.size = {
                         width: (size.actualBoundingBoxRight - size.actualBoundingBoxLeft) / this.grid_x_size,
                         height: (size.actualBoundingBoxAscent + size.actualBoundingBoxDescent) / this.grid_y_size
                     };
@@ -83,33 +61,33 @@ define(['leaflet', 'intersects'],
                 let max = Math.pow(2, this.max_zoom);
                 let sources = this.sources;
                 let shadowSize = this.shadowSize;
-                function draw(i, boring) {
+                function draw(i) {
                     var startTime = Date.now();
                     for (; i < sources.length; i++) {
-                        let j = sources[i];
-                        if (coords.z >= j.zoomMin && coords.z < j.zoomMax) {
+                        let source = sources[i];
+                        if (coords.z >= source.zoomMin && coords.z < source.zoomMax) {
 
-                            let scale = raw_scale * j.scale;
+                            let scale = raw_scale * source.scale;
                             let text_scale = hd_ratio * scale * zoom / max;
                             let shadow = shadowSize * text_scale;
-                            let label_w = j.size.width * zoom * scale * hd_ratio + shadow * 2;
-                            let label_h = j.size.height * zoom * scale * hd_ratio + shadow * 2;
-                            let label_x = j.x * zoom * hd_ratio - coords.x * tile.width - label_w * .5 - shadow;
-                            let label_y = j.y * zoom * hd_ratio - coords.y * tile.height - label_h * .25 - shadow;
+                            let label_w = source.size.width * zoom * scale * hd_ratio + shadow * 2;
+                            let label_h = source.size.height * zoom * scale * hd_ratio + shadow * 2;
+                            let label_x = source.x * zoom * hd_ratio - coords.x * tile.width - label_w * .5 - shadow;
+                            let label_y = source.y * zoom * hd_ratio - coords.y * tile.height - label_h * .25 - shadow;
 
                             if (intersects.boxBox(0, 0, tile.width, tile.height, label_x, label_y, label_w, label_h)) {
                                 ctx.setTransform(text_scale, 0, 0, text_scale, label_x + label_w * .5, label_y + label_h * .5);
-                                controlToFont(j.control, ctx, boring);
+                                controlToFont(source.control, ctx);
                                 ctx.shadowColor = "rgba(0, 0, 0, 1)";
                                 ctx.shadowBlur = shadow;
-                                ctx.fillStyle = j.color;
-                                ctx.strokeStyle = j.color;
+                                ctx.fillStyle = source.color;
+                                ctx.strokeStyle = source.color;
                                 ctx.textAlign = 'center';
                                 ctx.textBaseline = 'middle';
-                                ctx.fillText(boring ? j.original_text : j.text, 0, 0);
-                                ctx.fillText(boring ? j.original_text : j.text, 0, 0);
-                                ctx.fillText(boring ? j.original_text : j.text, 0, 0);
-                                ctx.fillText(boring ? j.original_text : j.text, 0, 0);
+                                ctx.fillText(source.original_text, 0, 0);
+                                ctx.fillText(source.original_text, 0, 0);
+                                ctx.fillText(source.original_text, 0, 0);
+                                ctx.fillText(source.original_text, 0, 0);
                                 ctx.shadowColor = "rgba(0, 0, 0, 0)";
                                 ctx.shadowBlur = 0;
                                 ctx.setTransform(1, 0, 0, 1, 0, 0);
@@ -117,14 +95,14 @@ define(['leaflet', 'intersects'],
                         }
 
                         if (Date.now() - startTime > 3) {
-                            setTimeout(() => draw(i, boring), 0);
+                            setTimeout(() => draw(i), 0);
                             return;
                         }
 
                     }
                     done(null, tile);
                 }
-                setTimeout(() => draw(0, this.boring), 0);
+                setTimeout(() => draw(0), 0);
                 return tile;
             }
         });
@@ -145,8 +123,8 @@ define(['leaflet', 'intersects'],
                 ctx = canvas.getContext('2d');
                 u.Offset = Offset;
                 u.addText = (text, original_text, control, x, y, zoomMin, zoomMax, color, scale) => {
-                    controlToFont(control, ctx, u.boring);
-                    var size = ctx.measureText(u.boring ? original_text : text);
+                    controlToFont(control, ctx);
+                    var size = ctx.measureText(original_text);
                     u.sources.push(
                         {
                             size: {

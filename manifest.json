@@ -10,12 +10,12 @@
   "prefer_related_applications": false,
   "icons": [
     {
-      "src": "favicon.png",
+      "src": "images/favicon.png",
       "type": "image/png",
       "sizes": "512x512"
     },
     {
-      "src": "favicon192.png",
+      "src": "images/favicon192.png",
       "type": "image/png",
       "sizes": "192x192"
     }

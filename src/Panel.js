@@ -20,26 +20,12 @@ define(['leaflet', './Itinerary.js', 'jquery'], function (L, Itinerary, $) {
             var t7 = L.Routing.Formatter.prototype.formatTime.call(this, htd_time);
             var a = "<div class=\'detailed-routeinfo\'><table class=\"vehicle-speed-panel\">";
             a = a.concat("<tr>");
-            a = a.concat("<td style=\"text-align: right\"><img src=\'Truck.webp\' class='fast-truck' /></td>");
+            a = a.concat("<td style=\"text-align: right\"><img src=\'images/Truck.webp\' class='fast-truck' /></td>");
             a = a.concat("<td style=\"text-align: left\">").concat(t2).concat("</td>");
-            //a = a.concat("<td style=\"text-align: right\"><img src=\'Truck.webp\' class='slow-truck' /></td>");
-            //a = a.concat("<td style=\"text-align: left\">").concat(t2).concat("</td>");
-            //a = a.concat("</tr>");
-            //a = a.concat("<tr>");
-            //a = a.concat("<td style=\"text-align: right\"><img src=\'Jeep.webp\' class='fast-truck' /></td>");
-            //a = a.concat("<td style=\"text-align: left\">").concat(t3).concat("</td>");
-            //a = a.concat("<td style=\"text-align: right\"><img src=\'Jeep.webp\' class='slow-truck'  /></td>");
-            //a = a.concat("<td style=\"text-align: left\">").concat(t4).concat("</td>");
-            //a = a.concat("</tr>");
-            //a = a.concat("<tr>");
-            a = a.concat("<td style=\"text-align: right\"><img src=\'Flatbed.webp\' class='fast-truck' /></td>");
+            a = a.concat("<td style=\"text-align: right\"><img src=\'images/Flatbed.webp\' class='fast-truck' /></td>");
             a = a.concat("<td style=\"text-align: left\">").concat(t6).concat("</td>");
-            //a = a.concat("<td style=\"text-align: right\"><img src=\'Flatbed.webp\' class='slow-truck' /></td>");
-            //a = a.concat("<td style=\"text-align: left\">").concat(t6).concat("</td>");
-
-            a = a.concat("<td style=\"text-align: right\"><img src=\'HTD.webp\' class='slowest-truck' /></td>");
+            a = a.concat("<td style=\"text-align: right\"><img src=\'images/HTD.webp\' class='slowest-truck' /></td>");
             a = a.concat("<td style=\"text-align: left\">").concat(t7).concat("</td>");
-
             a = a.concat("</tr>");
             a = a.concat("</table></div>");
             return a;
@@ -58,9 +44,7 @@ define(['leaflet', './Itinerary.js', 'jquery'], function (L, Itinerary, $) {
             }
             else
                 return L.Routing.Formatter.prototype.formatDistance.call(this, d, precision).replace(' ', '')
-
         }
-
     }
 
     var prototype = Itinerary.extend({
@@ -72,8 +56,8 @@ define(['leaflet', './Itinerary.js', 'jquery'], function (L, Itinerary, $) {
             routeDragInterval: 500,
             waypointMode: 'connect',
             showAlternatives: false,
-            defaultErrorHandler: function (e) {
-                console.error('Routing error:', e.error);
+            defaultErrorHandler: function (err) {
+                console.error('Routing error:', err.error);
             }
         },
 
@@ -206,18 +190,18 @@ define(['leaflet', './Itinerary.js', 'jquery'], function (L, Itinerary, $) {
                 bounds,
                 boundsSize,
                 i,
-                p;
+                point;
 
             try {
                 mapSize = this._map.getSize();
 
                 for (i = 0; i < wps.length; i++) {
-                    p = this._map.latLngToLayerPoint(wps[i].latLng);
+                    point = this._map.latLngToLayerPoint(wps[i].latLng);
 
                     if (bounds) {
-                        bounds.extend(p);
+                        bounds.extend(point);
                     } else {
-                        bounds = L.bounds([p]);
+                        bounds = L.bounds([point]);
                     }
                 }
 
@@ -459,7 +443,6 @@ define(['leaflet', './Itinerary.js', 'jquery'], function (L, Itinerary, $) {
                 container3.appendChild(divider3);
                 this.block.appendChild(container3);
             }
-
 
             var container = document.createElement("TR");
             container.classList.add("narrator-step-".concat((this.counter++).toString()));

@@ -11,8 +11,8 @@ define(['leaflet', 'intersects'],
             disabledIcons: {},
             zoomScale: function (zoom) { return .65 * (1 + this.max_zoom - zoom); },
             shadowSize: 20,
-            pixelScale: 1, // temporarily disabled: window.devicePixelRatio,
-            drawHex: (tile, ctx, x, y, w, h, scale) => {
+            pixelScale: 1,
+            drawHex: (ctx, x, y, w, h, scale) => {
                 ctx.lineWidth = scale;
                 ctx.beginPath();
                 ctx.moveTo(x + w, y);
@@ -25,7 +25,7 @@ define(['leaflet', 'intersects'],
                 ctx.stroke();
             },
 
-            fillHex: (tile, ctx, x, y, w, h, scale) => {
+            fillHex: (ctx, x, y, w, h) => {
                 ctx.beginPath();
                 ctx.moveTo(x + w, y);
                 ctx.lineTo(x + w * .5, y + h);
@@ -48,7 +48,6 @@ define(['leaflet', 'intersects'],
 
                 var zoom = Math.pow(2, coords.z);
 
-                var u = this;
                 var lineWidth = .2 * Math.pow(2, coords.z);
                 var shadow = lineWidth * .5 / Math.pow(2, c.t.max_zoom);
 
@@ -56,15 +55,15 @@ define(['leaflet', 'intersects'],
                 c.ctx.strokeStyle = '#303030';
                 c.ctx.opacity = .8;
                 c.ctx.scale(c.t.pixelScale, c.t.pixelScale);
-                for (var j of c.t.hex_sources) {
+                for (var source of c.t.hex_sources) {
 
-                    var label_w = j.size.width * zoom + shadow * 2;
-                    var label_h = j.size.height * zoom + shadow * 2;
-                    var label_x = j.x * zoom - coords.x * tile.width / c.t.pixelScale - label_w - shadow;
-                    var label_y = j.y * zoom - coords.y * tile.height / c.t.pixelScale - label_h - shadow;
+                    var label_w = source.size.width * zoom + shadow * 2;
+                    var label_h = source.size.height * zoom + shadow * 2;
+                    var label_x = source.x * zoom - coords.x * tile.width / c.t.pixelScale - label_w - shadow;
+                    var label_y = source.y * zoom - coords.y * tile.height / c.t.pixelScale - label_h - shadow;
 
                     if (intersects.boxBox(0, 0, tile.width, tile.height, label_x, label_y, label_w, label_h))
-                        c.t.drawHex(c.tile, c.ctx, label_x + label_w * .5, label_y + label_h * .5, label_w * .5, label_h * .5, lineWidth);
+                        c.t.drawHex(c.ctx, label_x + label_w * .5, label_y + label_h * .5, label_w * .5, label_h * .5, lineWidth);
                 }
                 c.ctx.restore();
             },
@@ -77,14 +76,14 @@ define(['leaflet', 'intersects'],
                 ctx.fillStyle = '#FFFFFFFF';
                 ctx.strokeStyle = '#FFFFFFFF';
                 ctx.scale(t.pixelScale, t.pixelScale);
-                for (var j of t.hex_sources) {
-                    if (!j.offline) {
-                        var label_w = j.size.width * zoom + shadow * 2;
-                        var label_h = j.size.height * zoom + shadow * 2;
-                        var label_x = j.x * zoom - coords.x * tile.width / t.pixelScale - label_w - shadow;
-                        var label_y = j.y * zoom - coords.y * tile.height / t.pixelScale - label_h - shadow;
+                for (var source of t.hex_sources) {
+                    if (!source.offline) {
+                        var label_w = source.size.width * zoom + shadow * 2;
+                        var label_h = source.size.height * zoom + shadow * 2;
+                        var label_x = source.x * zoom - coords.x * tile.width / t.pixelScale - label_w - shadow;
+                        var label_y = source.y * zoom - coords.y * tile.height / t.pixelScale - label_h - shadow;
                         if (intersects.boxBox(0, 0, tile.width, tile.height, label_x, label_y, label_w, label_h))
-                            t.fillHex(tile, ctx, label_x + label_w * .5, label_y + label_h * .5, label_w * .5, label_h * .5, lineWidth);
+                            t.fillHex(ctx, label_x + label_w * .5, label_y + label_h * .5, label_w * .5, label_h * .5);
                     }
                 }
                 ctx.restore();
@@ -97,26 +96,26 @@ define(['leaflet', 'intersects'],
                 ctx.save();
                 ctx.fillStyle = '#000000FF';
                 ctx.strokeStyle = '#000000FF';
-                for (var j of t.hex_sources)
-                    if (j.offline) {
-                        var label_w = j.size.width * zoom + shadow * 2;
-                        var label_h = j.size.height * zoom + shadow * 2;
-                        var label_x = j.x * zoom - coords.x * tile.width / t.pixelScale - label_w - shadow;// / t.pixelScale
-                        var label_y = j.y * zoom - coords.y * tile.height / t.pixelScale - label_h - shadow;
+                for (var source of t.hex_sources)
+                    if (source.offline) {
+                        var label_w = source.size.width * zoom + shadow * 2;
+                        var label_h = source.size.height * zoom + shadow * 2;
+                        var label_x = source.x * zoom - coords.x * tile.width / t.pixelScale - label_w - shadow;// / t.pixelScale
+                        var label_y = source.y * zoom - coords.y * tile.height / t.pixelScale - label_h - shadow;
                         if (intersects.boxBox(0, 0, tile.width, tile.height, label_x, label_y, label_w, label_h))
-                            t.fillHex(tile, ctx, label_x + label_w * .5, label_y + label_h * .5, label_w * .5, label_h * .5, lineWidth);
+                            t.fillHex(ctx, label_x + label_w * .5, label_y + label_h * .5, label_w * .5, label_h * .5);
                     }
                 ctx.restore();
             },
 
             disableIcons: function (icons) {
-                for (var i of icons)
-                    this.disabledIcons[i] = true;
+                for (var icon of icons)
+                    this.disabledIcons[icon] = true;
             },
 
             enableIcons: function (icons) {
-                for (var i of icons)
-                    delete this.disabledIcons[i];
+                for (var icon of icons)
+                    delete this.disabledIcons[icon];
             },
 
             loadIcons: function (c) {
@@ -125,20 +124,20 @@ define(['leaflet', 'intersects'],
                 var max = Math.pow(2, c.t.max_zoom);
                 c.pendingLoad = 0;
                 const shadowSize = 20;
-                for (var j of c.t.icon_sources) {
-                    if (c.coords.z >= j.zoomMin && c.coords.z < j.zoomMax && j.icon != null && !(j.icon in c.t.disabledIcons)) {
+                for (var source of c.t.icon_sources) {
+                    if (c.coords.z >= source.zoomMin && c.coords.z < source.zoomMax && source.icon != null && !(source.icon in c.t.disabledIcons)) {
                         var scale = raw_scale;
-                        let shadow = j.glow ? shadowSize * scale * zoom / max : 0;
-                        var label_w = j.size.width * zoom * scale;
-                        var label_h = j.size.height * zoom * scale;
-                        var label_x = j.x * zoom - c.coords.x * c.tile.width - label_w * .5;
-                        var label_y = j.y * zoom - c.coords.y * c.tile.height - label_h * .5;
+                        let shadow = source.glow ? shadowSize * scale * zoom / max : 0;
+                        var label_w = source.size.width * zoom * scale;
+                        var label_h = source.size.height * zoom * scale;
+                        var label_x = source.x * zoom - c.coords.x * c.tile.width - label_w * .5;
+                        var label_y = source.y * zoom - c.coords.y * c.tile.height - label_h * .5;
                         if (intersects.boxBox(0, 0, c.tile.width, c.tile.height, label_x - 2.0 * shadow, label_y - 2.0 * shadow, label_w + 4.0 * shadow, label_h + 4.0 * shadow)) {
-                            if (!(j.icon in c.t.imageCache)) {
+                            if (!(source.icon in c.t.imageCache)) {
                                 c.pendingLoad++;
                                 var img = { image: new Image() };
-                                c.t.imageCache[j.icon] = img;
-                                img.image.src = 'MapIcons/'.concat(j.icon);
+                                c.t.imageCache[source.icon] = img;
+                                img.image.src = 'images/MapIcons/'.concat(source.icon);
                                 img.image.onload = function () {
                                     --c.pendingLoad;
                                 };
@@ -157,7 +156,7 @@ define(['leaflet', 'intersects'],
                             callbacks[i]();
                     };
                 }
-                function makeRenderCallback(u, icon, ctx, img, lx, ly, lw, lh, tile, glow, shadow) {
+                function makeRenderCallback(ctx, img, lx, ly, lw, lh, tile, glow, shadow) {
                     return function () {
                         if (glow) {
                             ctx.filter = "brightness(0.5) sepia(1) hue-rotate(296deg) saturate(10000%) blur(".concat(shadow).concat("px)"); // blur(10px)
@@ -184,26 +183,26 @@ define(['leaflet', 'intersects'],
 
                 const shadowSize = 20;
 
-                for (var j of c.t.icon_sources) {
+                for (var source of c.t.icon_sources) {
 
-                    if (c.coords.z >= j.zoomMin && c.coords.z < j.zoomMax && j.icon != null && !(j.icon in c.t.disabledIcons)) {
+                    if (c.coords.z >= source.zoomMin && c.coords.z < source.zoomMax && source.icon != null && !(source.icon in c.t.disabledIcons)) {
 
                         var scale = raw_scale;
-                        let shadow = j.glow ? shadowSize * scale * zoom / max : 0;
+                        let shadow = source.glow ? shadowSize * scale * zoom / max : 0;
 
-                        var label_w = j.size.width * zoom * scale;
-                        var label_h = j.size.height * zoom * scale;
-                        var label_x = j.x * zoom - c.coords.x * c.tile.width / c.t.pixelScale - label_w * .5;
-                        var label_y = j.y * zoom - c.coords.y * c.tile.height / c.t.pixelScale - label_h * .5;
+                        var label_w = source.size.width * zoom * scale;
+                        var label_h = source.size.height * zoom * scale;
+                        var label_x = source.x * zoom - c.coords.x * c.tile.width / c.t.pixelScale - label_w * .5;
+                        var label_y = source.y * zoom - c.coords.y * c.tile.height / c.t.pixelScale - label_h * .5;
 
 
                         if (intersects.boxBox(0, 0, c.tile.width / c.t.pixelScale, c.tile.height / c.t.pixelScale, label_x - 2.0 * shadow, label_y - 2.0 * shadow, label_w + 4.0 * shadow, label_h + 4.0 * shadow)) {
-                            var icon = j.icon;
+                            var icon = source.icon;
                             var lx = label_x, ly = label_y, lw = label_w, lh = label_h;
                             if (icon in c.t.imageCache) {
                                 var img = c.t.imageCache[icon];
                                 if (img.image.complete) {
-                                    if (j.glow) {
+                                    if (source.glow) {
                                         c.ctx.save();
                                         c.ctx.filter = "brightness(0.5) sepia(1) hue-rotate(296deg) saturate(10000%) blur(".concat(shadow).concat("px)"); // blur(10px)
                                         c.ctx.drawImage(img.image, lx, ly, lw, lh);
@@ -215,16 +214,16 @@ define(['leaflet', 'intersects'],
                                         c.ctx.drawImage(img.image, lx, ly, lw, lh);
                                 }
                                 else {
-                                    img.callbacks.push(makeRenderCallback(c.t, icon, c.ctx, img, lx, ly, lw, lh, c.tile, j.glow, shadow));
+                                    img.callbacks.push(makeRenderCallback(c.ctx, img, lx, ly, lw, lh, c.tile, source.glow, shadow));
                                     c.tile.pendingLoad++;
                                 }
                             }
                             else {
                                 c.tile.pendingLoad++;
                                 var img = { image: new Image() };
-                                img.callbacks = [makeRenderCallback(c.t, icon, c.ctx, img, lx, ly, lw, lh, c.tile, j.glow, shadow)];
+                                img.callbacks = [makeRenderCallback(c.ctx, img, lx, ly, lw, lh, c.tile, source.glow, shadow)];
                                 c.t.imageCache[icon] = img;
-                                img.image.src = 'MapIcons/'.concat(j.icon);
+                                img.image.src = 'images/MapIcons/'.concat(source.icon);
                                 img.image.onload = makeOnLoadCallback(icon, c.t);
                             }
                         }
@@ -235,14 +234,12 @@ define(['leaflet', 'intersects'],
             },
 
             pixelScale: 1, // This is too intense for now: window.devicePixelRatio,
-            build: "",
+
             renderer: function (c, phase) {
                 switch (phase) {
                     case 1:
                         {
                             c.tile = L.DomUtil.create('canvas', 'leaflet-tile');
-                            //c.tile.crossorigin = "Anonymous";
-                            //c.tile.setAttribute("crossorigin", "Anonymous");
                             let size = c.t.getTileSize();
                             c.tile.width = size.x * c.t.pixelScale;
                             c.tile.height = size.y * c.t.pixelScale;
@@ -252,7 +249,7 @@ define(['leaflet', 'intersects'],
                             c.t.loadIcons(c);
                             c.img = new Image();
                             var scale = Math.pow(2, Math.max(0, c.coords.z - c.t.max_native_zoom));
-                            c.img.src = 'Tiles/'.concat(Math.min(c.coords.z, c.t.max_native_zoom)).concat('_').concat(Math.floor(c.coords.x / scale)).concat('_').concat(Math.floor(c.coords.y / scale)).concat('.webp').concat(c.t.build);
+                            c.img.src = 'images/Tiles/'.concat(Math.min(c.coords.z, c.t.max_native_zoom)).concat('_').concat(Math.floor(c.coords.x / scale)).concat('_').concat(Math.floor(c.coords.y / scale)).concat('.webp');
                             c.phase_2_complete = false;
                             c.phase_3_complete = false;
                             c.img.onload = () => c.t.yield(c, 2);
@@ -320,11 +317,9 @@ define(['leaflet', 'intersects'],
 
                                 c.ctx.save();
                                 c.ctx.globalCompositeOperation = 'source-atop';
-                                c.ctx.globalAlpha = .5;
+                                c.ctx.globalAlpha = .3;
                                 c.ctx.drawImage(overlay, 0, 0);
                                 c.ctx.restore();
-
-                                //c.temp_ctx.clearRect(0, 0, c.temp_canvas.width, c.temp_canvas.height);
 
                                 delete overlay_ctx;
                                 delete overlay;
@@ -400,15 +395,15 @@ define(['leaflet', 'intersects'],
                                     if (x >= 0 && y >= 0 && x < grid_x_size && y < grid_y_size) {
                                         for (; i < sources[x][y].length; i++) {
 
-                                            var j = sources[x][y][i];
-                                            ctx.strokeStyle = tiers[j.options.tier];
+                                            var source = sources[x][y][i];
+                                            ctx.strokeStyle = tiers[source.options.tier];
                                             ctx.beginPath();
                                             var coordsx = coords.x * tile.width / pixelScale;
                                             var coordsy = coords.y * tile.height / pixelScale;
-                                            var x1 = (j.points[0][1] + offset[0]) * depth_inverse - coordsx;
-                                            var y1 = (j.points[0][0] + offset[1]) * depth_inverse - coordsy;
-                                            var x2 = (j.points[1][1] + offset[0]) * depth_inverse - coordsx;
-                                            var y2 = (j.points[1][0] + offset[1]) * depth_inverse - coordsy;
+                                            var x1 = (source.points[0][1] + offset[0]) * depth_inverse - coordsx;
+                                            var y1 = (source.points[0][0] + offset[1]) * depth_inverse - coordsy;
+                                            var x2 = (source.points[1][1] + offset[0]) * depth_inverse - coordsx;
+                                            var y2 = (source.points[1][0] + offset[1]) * depth_inverse - coordsy;
                                             ctx.moveTo(x1, y1);
                                             ctx.lineTo(x2, y2);
                                             ctx.stroke();
@@ -434,22 +429,22 @@ define(['leaflet', 'intersects'],
 
                     if (step == 2) {
                         ctx.lineWidth = innerWidth;
-                        var colors = ['#516C4B', '#235683', '#303030', '#CCCC44'];
+                        var colors = ['#516C4B', '#235683', '#303030', '#CCCCCC'];
 
                         for (; y <= end_y; y++, x = start_x)
                             for (; x <= end_x; x++, i = 0)
                                 if (x >= 0 && y >= 0 && x < grid_x_size && y < grid_y_size) {
                                     for (; i < sources[x][y].length; i++) {
-                                        var j = sources[x][y][i];
-                                        if (controls[j.options.control]) {
-                                            ctx.strokeStyle = colors[j.options.control];
+                                        var source = sources[x][y][i];
+                                        if (controls[source.options.control]) {
+                                            ctx.strokeStyle = colors[source.options.control];
                                             ctx.beginPath();
                                             var coordsx = coords.x * tile.width / pixelScale;
                                             var coordsy = coords.y * tile.height / pixelScale;
-                                            var x1 = (j.points[0][1] + offset[0]) * depth_inverse - coordsx;
-                                            var y1 = (j.points[0][0] + offset[1]) * depth_inverse - coordsy;
-                                            var x2 = (j.points[1][1] + offset[0]) * depth_inverse - coordsx;
-                                            var y2 = (j.points[1][0] + offset[1]) * depth_inverse - coordsy;
+                                            var x1 = (source.points[0][1] + offset[0]) * depth_inverse - coordsx;
+                                            var y1 = (source.points[0][0] + offset[1]) * depth_inverse - coordsy;
+                                            var x2 = (source.points[1][1] + offset[0]) * depth_inverse - coordsx;
+                                            var y2 = (source.points[1][0] + offset[1]) * depth_inverse - coordsy;
                                             ctx.moveTo(x1, y1);
                                             ctx.lineTo(x2, y2);
                                             ctx.stroke();
@@ -494,17 +489,17 @@ define(['leaflet', 'intersects'],
                         if (v < 0) // fade from warden
                         {
                             v++;
-                            c.d.data[c.i++] = Math.floor(255 * (v * (1.0 - colors[0].r) + colors[0].r));
-                            c.d.data[c.i++] = Math.floor(255 * (v * (.4 - colors[0].g) + colors[0].g));
-                            c.d.data[c.i] = Math.floor(255 * (v * (.2666 - colors[0].b) + colors[0].b));
+                            c.d.data[c.i++] = Math.floor(255 * (v * (.5 - colors[0].r) + colors[0].r));
+                            c.d.data[c.i++] = Math.floor(255 * (v * (.5 - colors[0].g) + colors[0].g));
+                            c.d.data[c.i] = Math.floor(255 * (v * (.5 - colors[0].b) + colors[0].b));
                             c.i += 2;
                         }
                         else if (v > 0) // fade from colonial
                         {
                             v = 1 - v;
-                            c.d.data[c.i++] = Math.floor(255 * (v * (1.0 - colors[1].r) + colors[1].r));
-                            c.d.data[c.i++] = Math.floor(255 * (v * (.4 - colors[1].g) + colors[1].g));
-                            c.d.data[c.i] = Math.floor(255 * (v * (.2666 - colors[1].b) + colors[1].b));
+                            c.d.data[c.i++] = Math.floor(255 * (v * (.5 - colors[1].r) + colors[1].r));
+                            c.d.data[c.i++] = Math.floor(255 * (v * (.5 - colors[1].g) + colors[1].g));
+                            c.d.data[c.i] = Math.floor(255 * (v * (.5 - colors[1].b) + colors[1].b));
                             c.i += 2;
                         }
                     }
@@ -537,7 +532,7 @@ define(['leaflet', 'intersects'],
         });
 
         return {
-            Create: (MaxNativeZoom, MaxZoom, Offset, API, RoadWidth, ControlWidth, GridDepth) => {
+            Create: (MaxZoom, Offset, API, RoadWidth, ControlWidth, GridDepth) => {
                 var u = new VectorControlGridPrototype({ updateWhenZooming: false, noWrap: true, maxZoom: MaxZoom, minZoom: 0 });
 
                 var size = u.getTileSize();
@@ -577,7 +572,7 @@ define(['leaflet', 'intersects'],
 
                 u.addRoad = (points, options) => {
 
-                    var c = [[-points[0][0] - Offset[1], points[0][1] - Offset[0]], [-points[1][0] - Offset[1], points[1][1] - Offset[0]]]
+                    var c = [[-points[0][0] - 256, points[0][1]], [-points[1][0] - 256, points[1][1]]]
                     var p = [[c[0][0], c[0][1]], [c[1][0], c[1][1]]];
 
                     var x1 = c[0][1] + Offset[0];
@@ -610,7 +605,7 @@ define(['leaflet', 'intersects'],
 
                 };
 
-                u.max_native_zoom = MaxNativeZoom;
+                u.max_native_zoom = 5;
                 u.offset = Offset;
                 u.Offset = Offset;
                 u.API = API;
@@ -644,11 +639,11 @@ define(['leaflet', 'intersects'],
                     u.hex_sources.push(
                         {
                             size: {
-                                width: width,
-                                height: height
+                                width: width * 2,
+                                height: height * 2
                             },
-                            x: x + Offset[0] + width * .5,
-                            y: y + Offset[1] + height * .5,
+                            x: x + Offset[0] + width,
+                            y: y + Offset[1] + height,
                             offline: offline
                         });
                 };
