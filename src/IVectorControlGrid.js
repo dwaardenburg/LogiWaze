@@ -235,7 +235,7 @@ define(['leaflet', 'intersects'],
             },
 
             pixelScale: 1, // This is too intense for now: window.devicePixelRatio,
-
+            build: "",
             renderer: function (c, phase) {
                 switch (phase) {
                     case 1:
