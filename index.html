@@ -163,6 +163,8 @@
 
             var Geocoder = FoxholeGeocoder.Create(APIManager);
 
+            Router.VectorControlGrid.build = "?".concat(build);
+
             L.control.layers(
                 {},
                 {
@@ -745,6 +747,7 @@
             setTimeout(function () { document.getElementById("loader-holder").style.display = 'none'; }, 1000);
         }, shard);
 
+        
     </script>
 </body>
 </html>

@@ -115,24 +115,26 @@
 
                 var renderer = L.canvas({ tolerance: .2 }).addTo(mymap);
 
-                var RegionLabels = VectorTextGrid.Create(8, [0, 256]);
-                var ControlLayer = VectorControlGrid.Create(8, [0, 256], API, .30, .17, GridDepth);
+                var RegionLabels = VectorTextGrid.Create(8, [128, 128]);
+                var ControlLayer = VectorControlGrid.Create(5, 8, [128, 128], API, .30, .17, GridDepth);
+
                 var regions = API.regions;
-                var w = 46.545454545 * .5;
-                var h = w * Math.sqrt(3) / 2;
-                for (var i = 0; i < regions.length; i++)
-                    ControlLayer.addHex(256 - regions[i].x, regions[i].y, w, h, !(regions[i].name in API.mapControl));
+                var h = 256 / 7;
+                var w = h * 2 / Math.sqrt(3);
+
+                regions.forEach(region => ControlLayer.addHex(region.x, region.y, w, h, !(region.name in API.mapControl)));
 
                 var resolveIcon = function (ic) {
                     if (ic.icon == null)
                         return null;
-                    if (ic.icon == 5)
+
+                    if (ic.icon == 56 || ic.icon == 5)
                         icon = 'MapIconStaticBase1';
                     else if (ic.icon == 35)
                         icon = "MapIconSafehouse";
-                    else if (ic.icon == 6)
+                    else if (ic.icon == 57 || ic.icon == 6)
                         icon = 'MapIconStaticBase2';
-                    else if (ic.icon == 7)
+                    else if (ic.icon == 58 || ic.icon == 7)
                         icon = 'MapIconStaticBase3';
                     else if (ic.icon == 27)
                         icon = 'MapIconKeep'
@@ -239,7 +241,7 @@
                 for (var t = 0; t < ks.length; t++) {
                     var th = towns[ks[t]];
                     if (th.major != 1) {
-                        var ownership = API.ownership(th.x, th.y, th.region).ownership;
+                        var ownership = API.ownership(th.x + 128, th.y - 128, th.region).ownership;
                         var control = ownership == "COLONIALS" ? 0 : (ownership == "WARDENS" ? 1 : 2);
                         RegionLabels.addText(Recase(ks[t]), ks[t], control, th.x, th.y, 5, 9, '#bbbbbb');
                     }
@@ -248,7 +250,7 @@
                 for (var t = 0; t < ks.length; t++) {
                     var th = towns[ks[t]];
                     if (th.major == 1) {
-                        var ownership = API.ownership(th.x, th.y, th.region).ownership;
+                        var ownership = API.ownership(th.x + 128, th.y - 128, th.region).ownership;
                         var control = ownership == "COLONIALS" ? 0 : (ownership == "WARDENS" ? 1 : 2);
                         RegionLabels.addText(Recase(ks[t]), ks[t], control, th.x, th.y, 3, 9, '#fff');
                     }
@@ -258,13 +260,13 @@
                     RegionLabels.addText(Recase(API.regions[i].realName), API.regions[i].realName, 4, API.regions[i].x, API.regions[i].y, 0, 3, '#ffffff', 2.5);
 
 
-                for (var credit of [
-                    { text: "Hayden Grove", x: 139.079, y: -155.292 },
-                    { text: "Steely Phil Bridge", x: 18.18, y: -161.439 },
-                    { text: "Icanari Killing Fields", x: 134.071, y: -143.104 },
-                    { text: "Kastow Peak", x: 124.817, y: -122.72 },
-                    { text: "DragonZephyr Col", x: 119.176, y: -83.464 },
-                    { text: "Skaj Sound", x: 49.826, y: -102.048 }]
+                for (var credit of [ // wow these are all wrong now
+                    { text: "Hayden Grove", x: (139.079-128) * 0.90726470872655477280009094078879, y: (-155.292 + 128) * 0.90726470872655477280009094078879 },
+                    { text: "Steely Phil Bridge", x: (18.18-128) * 0.90726470872655477280009094078879, y: (-161.439 + 128) * 0.90726470872655477280009094078879 },
+                    { text: "Icanari Killing Fields", x: (134.071 - 128) * 0.90726470872655477280009094078879, y: (-143.104 + 128) * 0.90726470872655477280009094078879 },
+                    { text: "Kastow Peak", x: (124.817 -128)* 0.90726470872655477280009094078879, y: (-122.72 + 128) * 0.90726470872655477280009094078879},
+                    { text: "DragonZephyr Col", x: (119.176-128) * 0.90726470872655477280009094078879, y: (-83.464 + 128) *0.90726470872655477280009094078879},
+                    { text: "Skaj Sound", x: (49.826-128)*0.90726470872655477280009094078879, y:(-102.048+128)*0.90726470872655477280009094078879}]
                 )
                     RegionLabels.addText(Recase(credit.text), credit.text, control, credit.x, credit.y, 7, 9, '#DAA520');
 
@@ -380,6 +382,7 @@
                     Fuel: L.layerGroup().addTo(mymap),
                     Salvage: L.layerGroup().addTo(mymap),
                     Sulfur: L.layerGroup().addTo(mymap),
+                    VectorControlGrid: ControlLayer,
                     API: API,
                     Roads: JSONRoads,
 
