@@ -54,30 +54,33 @@ let regionNameMap = [];
 for (var i = 0; i < regions.length; i++)
     regionNameMap[regions[i].name] = regions[i].realName;
 
-function APIQuery(URL, success, error) {
+function APIQuery(URL, success) {
     superagent.get(URL).then(res => {
         success(res.body);
     }).catch(error => { console.log(error); alert("War API cannot be contacted right now: ".concat(error)); });
 }
 
-
 exports.API = {
     regions: regions,
+    mapControl: {},
+    resources: {},
+    townHallIcons : [35, 5, 6, 7, 8, 9, 10, 45, 46, 47, 29, 17, 34, 51, 39, 52, 33, 18, 19, 56, 57, 58],
+    krigingControlPointIcons: [5, 6, 7, 8, 9, 10, 45, 46, 47, 29, 56, 57, 58],
+
     mapRegionName: function (x) {
         return regionNameMap[x];
     },
+
     calculateRegion: function (x, y) {
         for (var i = 0; i < regions.length; i++) {
             var region = regions[i];
-
 
             if (pip([x - region.x - 128, - region.y + y + 128], regionPolygon))
                 return region.name;
         }
         return null;
     },
-    mapControl: {},
-    resources: {},
+
     remapXY: function (f) {
         var k = 256 / 7;
         var w = k * 2 / Math.sqrt(3);
@@ -140,7 +143,6 @@ exports.API = {
                 var py = j.y;
                 var distanceCalculation = (x - px) * (x - px) + (y - py) * (y - py);
                 if (distanceSquared < 0 || distanceCalculation < distanceSquared) {
-                    control = j.control;
                     icon = j.mapIcon;
                     distanceSquared = distanceCalculation;
                 }
@@ -155,21 +157,16 @@ exports.API = {
         return kriging.predict(x - 128, y + 128, exports.API.variogram)
     },
 
-    townHallIcons : [35, 5, 6, 7, 8, 9, 10, 45, 46, 47, 29, 17, 34, 51, 39, 52, 33, 18, 19, 56, 57, 58],
-
-    krigingControlPointIcons: [35, 5, 6, 7, 8, 9, 10, 45, 46, 47, 29, 56, 57, 58],
-
     update: function (completionCallback, shard) {
 
         if (shard == null)
             shard = 'war-service-live';
         else
-            shard = 'war-service-live-'.concat(shard);
+            shard = 'war-service-'.concat(shard);
 
         APIQuery("https://".concat(shard).concat(".foxholeservices.com/api/worldconquest/war"),
             function (war) {
                 exports.API.war = war;
-                //alert(war);
                 APIQuery("https://".concat(shard).concat(".foxholeservices.com/api/worldconquest/maps"),
                     function (maps) {
                         // iterate here on the maps and collect status
@@ -196,7 +193,14 @@ exports.API = {
                                                 y = ((((1 - y) * yf) + offset.y) - yf * .5);
                                                 var key = x.toFixed(3).toString().concat('|').concat(y.toFixed(3).toString());
                                                 var control = mapData.mapItems[j].teamId;
-                                                exports.API.mapControl[mapName][key] = { x: x, y: y, control: control, mapIcon: icon, nuked: (mapData.mapItems[j].flags & 0x10) != 0, town:                                                 exports.API.krigingControlPointIcons.includes(icon)                                                                                                };
+                                                exports.API.mapControl[mapName][key] = {
+                                                    x: x,
+                                                    y: y,
+                                                    control: control,
+                                                    mapIcon: icon,
+                                                    nuked: (mapData.mapItems[j].flags & 0x10) != 0,
+                                                    town: exports.API.krigingControlPointIcons.includes(icon)
+                                                };
                                                 if ((mapData.mapItems[j].flags & 0x10) == 0 && control != "OFFLINE" && exports.API.krigingControlPointIcons.includes(icon)) {
                                                     p_x.push(x);
                                                     p_y.push(y);
@@ -204,27 +208,26 @@ exports.API = {
                                                 }
                                             }
                                             else {
-                                                var x = mapData.mapItems[j].x;
-                                                var y = mapData.mapItems[j].y;
-                                                x = (((x * xf) + offset.x) - xf * .5);
-                                                y = ((((1 - y) * yf) + offset.y) - yf * .5);
-                                                var key = x.toFixed(3).toString().concat('|').concat(y.toFixed(3).toString());
+                                                x = (((mapData.mapItems[j].x * xf) + offset.x) - xf * .5);
+                                                y = ((((1 - mapData.mapItems[j].y) * yf) + offset.y) - yf * .5);
+                                                key = x.toFixed(3).toString().concat('|').concat(y.toFixed(3).toString());
                                                 exports.API.resources[mapName][key] = {
-                                                    x: x, y: y, control: mapData.mapItems[j].teamId, mapIcon: icon, nuked: (mapData.mapItems[j].flags & 0x10) != 0
+                                                    x: x,
+                                                    y: y,
+                                                    control: mapData.mapItems[j].teamId,
+                                                    mapIcon: icon,
+                                                    nuked: (mapData.mapItems[j].flags & 0x10) != 0
                                                 };
                                             }
                                         }
 
                                     }
 
-
                                     if (--complete == 0) {
                                         exports.API.variogram = kriging.train(p_t, p_x, p_y, 'exponential', 0, 100);
                                         completionCallback();
                                     }
-
                                 });
-
                         }
                     });
             });

@@ -4,10 +4,9 @@ define(['leaflet', 'intersects'],
         var VectorIconGridPrototype = L.GridLayer.extend({
 
             disabledIcons: {},
+            shadowSize: 20,
 
             zoomScale: function (zoom) { return .65 * (1 + this.max_zoom - zoom); },
-
-            shadowSize: 20,
 
             disableIcons: function (icons) {
                 for (var i of icons)
@@ -57,7 +56,7 @@ define(['leaflet', 'intersects'],
                 tile.style.width = (size.x * hd_ratio).toString().concat("px");
                 tile.style.height = (size.y * hd_ratio).toString().concat("px");
 
-                ctx = tile.getContext('2d');
+                var ctx = tile.getContext('2d');
 
                 var zoom = Math.pow(2, coords.z);
                 var max = Math.pow(2, this.max_zoom);
@@ -102,7 +101,7 @@ define(['leaflet', 'intersects'],
                             }
                             else {
                                 tile.pendingLoad++;
-                                var img = { image: new Image() };
+                                img = { image: new Image() };
                                 img.callbacks = [makeRenderCallback(this, icon, ctx, img, lx, ly, lw, lh, done, tile, source.glow, shadow)];
                                 this.imageCache[icon] = img;
                                 img.image.src = '../images/MapIcons/'.concat(source.icon);

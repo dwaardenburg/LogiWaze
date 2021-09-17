@@ -13,7 +13,7 @@ define(['leaflet', 'intersects'],
                     ctx.font = '90px Renner';
                     break;
             }
-        };
+        }
 
         var VectorGridPrototype = L.GridLayer.extend({
             zoomScale: function (zoom) { return .65 * (1 + this.max_zoom - zoom); },
@@ -22,7 +22,7 @@ define(['leaflet', 'intersects'],
             pixelScale: window.devicePixelRatio,
             recalculateSizes: function () {
                 var canvas = L.DomUtil.create('canvas', 'leaflet-tile');
-                ctx = canvas.getContext('2d');
+                var ctx = canvas.getContext('2d');
                 for (let source of this.sources) {
                     controlToFont(source.control, ctx);
                     var size = ctx.measureText(source.original_text);
@@ -120,7 +120,7 @@ define(['leaflet', 'intersects'],
                 u.grid_y_height = size.y / u.grid_y_size;
                 u.Offset = Offset;
                 var canvas = L.DomUtil.create('canvas', 'leaflet-tile');
-                ctx = canvas.getContext('2d');
+                var ctx = canvas.getContext('2d');
                 u.Offset = Offset;
                 u.addText = (text, original_text, control, x, y, zoomMin, zoomMax, color, scale) => {
                     controlToFont(control, ctx);

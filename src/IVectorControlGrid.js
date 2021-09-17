@@ -1,8 +1,6 @@
 define(['leaflet', 'intersects'],
     function (L, intersects) {
-
         var VectorControlGridPrototype = L.GridLayer.extend({
-
             controls: [true, true, true, true],
             quality: true,
             draw: true,
@@ -10,8 +8,8 @@ define(['leaflet', 'intersects'],
             shadowSize: 20,
             disabledIcons: {},
             zoomScale: function (zoom) { return .65 * (1 + this.max_zoom - zoom); },
-            shadowSize: 20,
             pixelScale: 1,
+            build: "",
             drawHex: (ctx, x, y, w, h, scale) => {
                 ctx.lineWidth = scale;
                 ctx.beginPath();
@@ -47,7 +45,6 @@ define(['leaflet', 'intersects'],
                     return tile;
 
                 var zoom = Math.pow(2, coords.z);
-
                 var lineWidth = .2 * Math.pow(2, coords.z);
                 var shadow = lineWidth * .5 / Math.pow(2, c.t.max_zoom);
 
@@ -56,7 +53,6 @@ define(['leaflet', 'intersects'],
                 c.ctx.opacity = .8;
                 c.ctx.scale(c.t.pixelScale, c.t.pixelScale);
                 for (var source of c.t.hex_sources) {
-
                     var label_w = source.size.width * zoom + shadow * 2;
                     var label_h = source.size.height * zoom + shadow * 2;
                     var label_x = source.x * zoom - coords.x * tile.width / c.t.pixelScale - label_w - shadow;
@@ -148,7 +144,6 @@ define(['leaflet', 'intersects'],
             },
 
             drawIcons: function (c) {
-
                 function makeOnLoadCallback(icon, u) {
                     return function () {
                         var callbacks = u.imageCache[icon].callbacks;
@@ -175,7 +170,6 @@ define(['leaflet', 'intersects'],
                 }
 
                 var raw_scale = c.t.zoomScale(c.coords.z);
-
                 var zoom = Math.pow(2, c.coords.z);
                 var max = Math.pow(2, c.t.max_zoom);
 
@@ -220,7 +214,7 @@ define(['leaflet', 'intersects'],
                             }
                             else {
                                 c.tile.pendingLoad++;
-                                var img = { image: new Image() };
+                                img = { image: new Image() };
                                 img.callbacks = [makeRenderCallback(c.ctx, img, lx, ly, lw, lh, c.tile, source.glow, shadow)];
                                 c.t.imageCache[icon] = img;
                                 img.image.src = 'images/MapIcons/'.concat(source.icon);
@@ -233,8 +227,6 @@ define(['leaflet', 'intersects'],
                     c.t.yield(c, 8);
             },
 
-            pixelScale: 1, // This is too intense for now: window.devicePixelRatio,
-            build: "",
             renderer: function (c, phase) {
                 switch (phase) {
                     case 1:
@@ -258,7 +250,7 @@ define(['leaflet', 'intersects'],
                         }
                     case 2:
                         {
-                            var scale = Math.pow(2, Math.max(0, c.coords.z - c.t.max_native_zoom));
+                            scale = Math.pow(2, Math.max(0, c.coords.z - c.t.max_native_zoom));
                             var ox = c.coords.x % scale;
                             var oy = c.coords.y % scale;
                             var bx = (c.img.width / scale);
@@ -276,7 +268,7 @@ define(['leaflet', 'intersects'],
                             if (!c.t.draw) {
                                 c.phase_3_complete = true;
                                 if(c.phase_2_complete)
-                                c.t.yield(c, 4);
+                                    c.t.yield(c, 4);
                                 return;
                             }
                             c.temp_canvas = L.DomUtil.create('canvas', '');
@@ -321,8 +313,6 @@ define(['leaflet', 'intersects'],
                                 c.ctx.drawImage(overlay, 0, 0);
                                 c.ctx.restore();
 
-                                delete overlay_ctx;
-                                delete overlay;
                                 delete c.temp_canvas;
                             }
                             c.t.yield(c, 5);
@@ -435,16 +425,16 @@ define(['leaflet', 'intersects'],
                             for (; x <= end_x; x++, i = 0)
                                 if (x >= 0 && y >= 0 && x < grid_x_size && y < grid_y_size) {
                                     for (; i < sources[x][y].length; i++) {
-                                        var source = sources[x][y][i];
+                                        source = sources[x][y][i];
                                         if (controls[source.options.control]) {
                                             ctx.strokeStyle = colors[source.options.control];
                                             ctx.beginPath();
-                                            var coordsx = coords.x * tile.width / pixelScale;
-                                            var coordsy = coords.y * tile.height / pixelScale;
-                                            var x1 = (source.points[0][1] + offset[0]) * depth_inverse - coordsx;
-                                            var y1 = (source.points[0][0] + offset[1]) * depth_inverse - coordsy;
-                                            var x2 = (source.points[1][1] + offset[0]) * depth_inverse - coordsx;
-                                            var y2 = (source.points[1][0] + offset[1]) * depth_inverse - coordsy;
+                                            coordsx = coords.x * tile.width / pixelScale;
+                                            coordsy = coords.y * tile.height / pixelScale;
+                                            x1 = (source.points[0][1] + offset[0]) * depth_inverse - coordsx;
+                                            y1 = (source.points[0][0] + offset[1]) * depth_inverse - coordsy;
+                                            x2 = (source.points[1][1] + offset[0]) * depth_inverse - coordsx;
+                                            y2 = (source.points[1][0] + offset[1]) * depth_inverse - coordsy;
                                             ctx.moveTo(x1, y1);
                                             ctx.lineTo(x2, y2);
                                             ctx.stroke();
@@ -562,7 +552,7 @@ define(['leaflet', 'intersects'],
                 var marginx = margin / u.grid_x_size;
                 var marginy = margin / u.grid_y_size;
 
-                var addLine = (x, y, p, options, u, Offset) => {
+                var addLine = (x, y, p, options, u) => {
                     if (x >= 0 && y >= 0 && x < u.grid_x_size && y < u.grid_y_size)
                         u.road_sources[x][y].push({ points: p, options: options });
                 };

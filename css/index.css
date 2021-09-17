@@ -5,16 +5,10 @@ body {
     user-select: none; /* Likely future */
 }
 
-
 .leaflet-routing-alt-minimized table tr td span.summary-routeinfo div
 {
     display: none;
 }
-
-/*.route-summary-header td {
-    background-color: rgba(51, 51, 51, .3);
-    border-radius: 4px;
-}*/
 
 .roadtier {
     line-height: 16px;
@@ -28,14 +22,14 @@ body {
     border: 1px solid #333;
 }
 
-    .roadtier div {
-        box-sizing: border-box;
-        display: inline-block;
-        height: 100%;
-        border-radius: 3px;
-        /*text-align: right;*/
-        text-indent: 2px;
-    }
+.roadtier div {
+    box-sizing: border-box;
+    display: inline-block;
+    height: 100%;
+    border-radius: 3px;
+    /*text-align: right;*/
+    text-indent: 2px;
+}
 
 .roadtier div span {
     position: relative;
@@ -68,7 +62,7 @@ body {
     box-sizing: border-box;
 }
 
-.leaflet-control-container .leaflet-routing-container-hide {
+.leaflet-routing-container-hide {
     left: 332px;
 }
 
@@ -86,7 +80,8 @@ body {
     margin-top: -10px;
     margin-bottom: 20px;
     background-color: #424f60;
-    box-shadow: 0 0 4px 4px rgba(0,0,0,.6) !important;
+    background-clip: padding-box;
+    border: 2px solid rgba(0,0,0,0.2);
     opacity: 1 !important;
 }
 
@@ -224,7 +219,7 @@ body {
     border-radius: 4px;
     background-color: #555;
     margin: 0;
-    margin-right: 3px;
+    margin-right: 2px;
     float: right;
     cursor: pointer;
     transition: background-color .2s ease;
@@ -265,13 +260,13 @@ button.leaflet-routing-add-waypoint {
     z-index: 1000;
 }
 
-    .leaflet-routing-geocoder-result table {
-        width: 100%;
-        /*border: 1px solid #ccc;*/
-        border-radius: 0 0 4px 4px;
-        background-color: #fff;
-        cursor: pointer;
-    }
+.leaflet-routing-geocoder-result table {
+    width: 100%;
+    /*border: 1px solid #ccc;*/
+    border-radius: 0 0 4px 4px;
+    background-color: #fff;
+    cursor: pointer;
+}
 
 .leaflet-routing-geocoder-result-open {
     max-height: 800px;
@@ -289,33 +284,33 @@ button.leaflet-routing-add-waypoint {
     cursor: pointer;
 }
 
-    .leaflet-routing-remove-waypoint:after {
-        position: absolute;
-        display: block;
-        width: 15px;
-        height: 1px;
-        z-index: 1;
-        right: 1px;
-        top: 3px;
-        bottom: 0;
-        margin: auto;
-        padding: 2px;
-        font-size: 18px;
-        font-weight: 700;
-        content: "\00d7";
-        text-align: center;
-        cursor: pointer;
-        color: #ccc;
-        background: #fff;
-        padding-bottom: 16px;
-        margin-top: -16px;
-        padding-right: 4px;
-        line-height: 1;
-    }
+.leaflet-routing-remove-waypoint:after {
+    position: absolute;
+    display: block;
+    width: 15px;
+    height: 1px;
+    z-index: 1;
+    right: 1px;
+    top: 3px;
+    bottom: 0;
+    margin: auto;
+    padding: 2px;
+    font-size: 18px;
+    font-weight: 700;
+    content: "\00d7";
+    text-align: center;
+    cursor: pointer;
+    color: #ccc;
+    background: #fff;
+    padding-bottom: 16px;
+    margin-top: -16px;
+    padding-right: 4px;
+    line-height: 1;
+}
 
-    .leaflet-routing-remove-waypoint:hover {
-        color: #000;
-    }
+.leaflet-routing-remove-waypoint:hover {
+    color: #000;
+}
 
 .leaflet-routing-instruction-distance {
     width: 48px;
@@ -324,44 +319,21 @@ button.leaflet-routing-add-waypoint {
 .leaflet-routing-collapse-btn {
     cursor: pointer;
     pointer-events: auto;
-    background-color: #B0B0B0;
-    border: 1px solid #555555FB;
-    border-collapse: collapse;
-    box-shadow: 0 0 4px 4px rgba(0,0,0,.6) !important;
+    background-color: #fff;
+    background-clip: padding-box;
+    border: 2px solid rgba(0,0,0,0.2);
     clip-path: inset(-16px 0px -16px -16px);
     position: absolute;
     top: 50px;
     width: 50px;
     height: 120px;
     left: -52px;
-    opacity: .85;
     border-right: none !important;
     font-size: 24px;
     color: #ccc;
     font-weight: 700;
-    border-radius: 4px unset unset 4px !important;
+    border-radius: 4px unset unset 4px;
 }
-
-.leaflet-control-zoom {
-    background-color: #B0B0B0;
-    border: 1px solid #555555FB;
-    border-collapse: collapse;
-    box-shadow: 0 0 4px 4px rgba(0,0,0,.6) !important;
-    opacity: .85;
-    font-size: 24px;
-    font-weight: 700;
-    /*border-radius: 4px unset unset 4px !important;*/
-}
-
-    .leaflet-control-zoom a {
-        background-color: #B0B0B0 !important;
-        border-collapse: collapse;
-        font-size: 24px;
-        font-weight: 700;
-        color: #444;
-        text-shadow: 0px 0px 2px rgba(.3,.3,.3,.5);
-    }
-
 
 .leaflet-routing-collapse-btn::after {
     content: 'Tools';
@@ -494,25 +466,25 @@ button.leaflet-routing-add-waypoint {
     transition: all .5s ease;
 }
 
-    .play-button .triangle {
-        transition: all .7s ease-in-out;
-        stroke-dasharray: 240;
-        stroke-dashoffset: 480;
-        stroke: #FFFFFF;
-        transform: translateY(0);
-    }
+.play-button .triangle {
+    transition: all .7s ease-in-out;
+    stroke-dasharray: 240;
+    stroke-dashoffset: 480;
+    stroke: #FFFFFF;
+    transform: translateY(0);
+}
 
-    .play-button svg {
-        width: 22px;
-        height: 22px;
-    }
+.play-button svg {
+    width: 22px;
+    height: 22px;
+}
 
-    .play-button:hover .triangle {
-        stroke-dashoffset: 0;
-        opacity: 1;
-        stroke: #FFFFFF;
-        animation: none nudge .7s ease-in-out;
-    }
+.play-button:hover .triangle {
+    stroke-dashoffset: 0;
+    opacity: 1;
+    stroke: #FFFFFF;
+    animation: none nudge .7s ease-in-out;
+}
 
 .route-summary-header {
     pointer-events: auto;
@@ -582,7 +554,7 @@ button.leaflet-routing-add-waypoint {
         vertical-align: middle;
     }
 
-.leaflet-control-container .leaflet-routing-container-hide {
+.leaflet-routing-container-hide {
     position: relative !important;
 }
 
@@ -652,19 +624,8 @@ html {
     font-family: Renner;
 }
 
-.leaflet-zoom-anim .leaflet-zoom-animated {
-    transition: ease-in-out;
-    transition-duration: .1s;
-}
-
 .leaflet-routing-container {
-    border: 1px solid #555555FB !important;
-    border-right: none !important;
-    border-collapse: collapse !important;
-    border-radius: 4px unset unset 4px !important;
-}
-
-.leaflet-routing-container, .leaflet-control-layers {
+    border-radius: 4px;
     opacity: .85;
 }
 
@@ -728,10 +689,6 @@ html {
     left: -100%;
 }
 
-.leaflet-top.leaflet-left .leaflet-control {
-    clear: none;
-}
-
 @media only all and ( max-aspect-ratio: 3/4 ), only all and (max-width: 700px) {
 
     .leaflet-routing-alt {
@@ -741,10 +698,6 @@ html {
     .leaflet-top.leaflet-left {
         left: unset;
         right: 10px;
-    }
-
-    .leaflet-control-zoom.leaflet-bar.leaflet-control {
-        float: right;
     }
 
     .leaflet-top.leaflet-right {

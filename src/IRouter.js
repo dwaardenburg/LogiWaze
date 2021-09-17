@@ -197,7 +197,10 @@
                     for (var k of Object.keys(region)) {
                         var th = region[k];
                         if (th.nuked) {
-                            var data = { ownership: th.control, icon: th.mapIcon };
+                            var data = {
+                                ownership: th.control,
+                                icon: th.mapIcon
+                            };
                             var icon = resolveResource(data);
                             ControlLayer.addIcon(icon, th.x, th.y, th.nuked, 0, 9);
                         }
@@ -209,7 +212,10 @@
                     for (var k of Object.keys(region)) {
                         var th = region[k];
                         if (th.nuked) {
-                            var data = { ownership: th.control, icon: th.mapIcon };
+                            var data = {
+                                ownership: th.control,
+                                icon: th.mapIcon
+                            };
                             var icon = resolveIcon(data);
                             ControlLayer.addIcon(icon, th.x, th.y, th.nuked, 0, 9);
                         }
@@ -221,7 +227,10 @@
                     for (var k of Object.keys(region)) {
 
                         var th = region[k];
-                        var data = { ownership: th.control, icon: th.mapIcon };
+                        var data = {
+                            ownership: th.control,
+                            icon: th.mapIcon
+                        };
                         var icon = resolveResource(data);
                         ControlLayer.addIcon(icon, th.x, th.y, false, 0, 9);
                     }
@@ -231,7 +240,10 @@
                     var region = API.mapControl[t];
                     for (var k of Object.keys(region)) {
                         var th = region[k];
-                        var data = { ownership: th.control, icon: th.mapIcon };
+                        var data = {
+                            ownership: th.control,
+                            icon: th.mapIcon
+                        };
                         var icon = resolveIcon(data);
                         ControlLayer.addIcon(icon, th.x, th.y, false, 0, 9);
                     }
@@ -261,14 +273,14 @@
 
 
                 for (var credit of [ // wow these are all wrong now
-                    { text: "Hayden Grove", x: (139.079-128) * 0.90726470872655477280009094078879, y: (-155.292 + 128) * 0.90726470872655477280009094078879 },
-                    { text: "Steely Phil Bridge", x: (18.18-128) * 0.90726470872655477280009094078879, y: (-161.439 + 128) * 0.90726470872655477280009094078879 },
+                    { text: "Hayden Grove", x: (139.079 - 128) * 0.90726470872655477280009094078879, y: (-155.292 + 128) * 0.90726470872655477280009094078879 },
+                    { text: "Steely Phil Bridge", x: (18.18 - 128) * 0.90726470872655477280009094078879, y: (-161.439 + 128) * 0.90726470872655477280009094078879 },
                     { text: "Icanari Killing Fields", x: (134.071 - 128) * 0.90726470872655477280009094078879, y: (-143.104 + 128) * 0.90726470872655477280009094078879 },
-                    { text: "Kastow Peak", x: (124.817 -128)* 0.90726470872655477280009094078879, y: (-122.72 + 128) * 0.90726470872655477280009094078879},
-                    { text: "DragonZephyr Col", x: (119.176-128) * 0.90726470872655477280009094078879, y: (-83.464 + 128) *0.90726470872655477280009094078879},
-                    { text: "Skaj Sound", x: (49.826-128)*0.90726470872655477280009094078879, y:(-102.048+128)*0.90726470872655477280009094078879}]
+                    { text: "Kastow Peak", x: (124.817 - 128)* 0.90726470872655477280009094078879, y: (-122.72 + 128) * 0.90726470872655477280009094078879},
+                    { text: "DragonZephyr Col", x: (119.176 - 128) * 0.90726470872655477280009094078879, y: (-83.464 + 128) * 0.90726470872655477280009094078879},
+                    { text: "Skaj Sound", x: (49.826 - 128) * 0.90726470872655477280009094078879, y:(-102.048 + 128) * 0.90726470872655477280009094078879}]
                 )
-                    RegionLabels.addText(Recase(credit.text), credit.text, control, credit.x, credit.y, 7, 9, '#DAA520');
+                RegionLabels.addText(Recase(credit.text), credit.text, control, credit.x, credit.y, 7, 9, '#DAA520');
 
                 for (var key in JSONRoads._layers) {
                     var layer = JSONRoads._layers[key];

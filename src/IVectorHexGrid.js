@@ -2,9 +2,7 @@ define(['leaflet', 'intersects'],
     function (L, intersects) {
 
         var VectorHexGridPrototype = L.GridLayer.extend({
-
             draw: true,
-
             shadowSize: 20,
 
             drawHex: (tile, ctx, x, y, w, h, scale) => {
@@ -21,7 +19,6 @@ define(['leaflet', 'intersects'],
             },
 
             createTile: function (coords) {
-
                 var hd_ratio = 1;
                 var size = this.getTileSize();
                 var tile = L.DomUtil.create('canvas', 'leaflet-tile');
@@ -61,7 +58,10 @@ define(['leaflet', 'intersects'],
 
         return {
             Create:  (MaxZoom, Offset) => {
-                var u = new VectorHexGridPrototype({ updateWhenZooming: false, noWrap: true });
+                var u = new VectorHexGridPrototype({
+                    updateWhenZooming: false,
+                    noWrap: true
+                });
                 var size = u.getTileSize();
                 u.sources = [];
                 u.max_zoom = MaxZoom;
