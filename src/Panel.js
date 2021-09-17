@@ -9,23 +9,18 @@ define(['leaflet', './Itinerary.js', 'jquery'], function (L, Itinerary, $) {
         formatTime(distance) {
             var time = distance * this.FoxholeRouter.truckSpeed;
             var t1 = L.Routing.Formatter.prototype.formatTime.call(this, time);
-            var t2 = L.Routing.Formatter.prototype.formatTime.call(this, time);
-            var jeep_time = distance * this.FoxholeRouter.jeepSpeed;
-            var t3 = L.Routing.Formatter.prototype.formatTime.call(this, jeep_time);
-            var t4 = L.Routing.Formatter.prototype.formatTime.call(this, jeep_time);
             var flatbed_time = distance * this.FoxholeRouter.flatbedSpeed;
-            var t5 = L.Routing.Formatter.prototype.formatTime.call(this, flatbed_time);
-            var t6 = L.Routing.Formatter.prototype.formatTime.call(this, flatbed_time);
+            var t2 = L.Routing.Formatter.prototype.formatTime.call(this, flatbed_time);
             var htd_time = distance * this.FoxholeRouter.htdSpeed;
-            var t7 = L.Routing.Formatter.prototype.formatTime.call(this, htd_time);
-            var a = "<div class=\'detailed-routeinfo\'><table class=\"vehicle-speed-panel\">";
+            var t3 = L.Routing.Formatter.prototype.formatTime.call(this, htd_time);
+            var a = "<div class='detailed-routeinfo'><table class='vehicle-speed-panel'>";
             a = a.concat("<tr>");
-            a = a.concat("<td style=\"text-align: right\"><img src=\'images/Truck.webp\' class='fast-truck' /></td>");
-            a = a.concat("<td style=\"text-align: left\">").concat(t2).concat("</td>");
-            a = a.concat("<td style=\"text-align: right\"><img src=\'images/Flatbed.webp\' class='fast-truck' /></td>");
-            a = a.concat("<td style=\"text-align: left\">").concat(t6).concat("</td>");
-            a = a.concat("<td style=\"text-align: right\"><img src=\'images/HTD.webp\' class='slowest-truck' /></td>");
-            a = a.concat("<td style=\"text-align: left\">").concat(t7).concat("</td>");
+            a = a.concat("<td style='text-align: right'><img src='images/Truck.webp' class='fast-truck' /></td>");
+            a = a.concat("<td style='text-align: left'>").concat(t1).concat("</td>");
+            a = a.concat("<td style='text-align: right'><img src='images/Flatbed.webp' class='fast-truck' /></td>");
+            a = a.concat("<td style='text-align: left'>").concat(t2).concat("</td>");
+            a = a.concat("<td style='text-align: right'><img src='images/HTD.webp' class='slowest-truck' /></td>");
+            a = a.concat("<td style='text-align: left'>").concat(t3).concat("</td>");
             a = a.concat("</tr>");
             a = a.concat("</table></div>");
             return a;
@@ -400,14 +395,14 @@ define(['leaflet', './Itinerary.js', 'jquery'], function (L, Itinerary, $) {
             this.API = API;
         }
 
-        createStep(text, distance, steps) {
+        createStep(text) {
 
             var region;
             var border = 0;
             var newRegion = false;
             var turnicon = "";
             if (text.indexOf("|") >= 0) {
-                var u = text.split("\|");
+                var u = text.split("|");
                 region = u[0];
                 text = u[1];
                 border = parseInt(u[2]);
@@ -448,7 +443,7 @@ define(['leaflet', './Itinerary.js', 'jquery'], function (L, Itinerary, $) {
             container.classList.add("narrator-step-".concat((this.counter++).toString()));
             container.classList.add("narrator-steps");
             container.style.padding = ".1em 2px";
-            var divider2 = document.createElement("TD");
+            divider2 = document.createElement("TD");
 
             if (turnicon != "" && turnicon != null && window.beta)
                 divider2.innerHTML = "<div class=\"".concat(turnicon.replace(' ', '-').toLowerCase()).concat('"></div>');

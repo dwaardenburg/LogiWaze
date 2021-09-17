@@ -62,9 +62,6 @@ define(['leaflet', 'leaflet-routing-machine'], function (L, R) {
             return this._container;
         },
 
-        onRemove: function () {
-        },
-
         createAlternativesContainer: function () {
             return L.DomUtil.create('div', 'leaflet-routing-alternatives-container');
         },
