@@ -13,8 +13,8 @@ var urlParams = new URLSearchParams(window.location.search);
             maxBounds: L.latLngBounds(L.latLng(-384, -256), L.latLng(128, 512)),
             maxZoom: 8
         });
-    L.imageOverlay("images/Background.webp", [[-200 - 128, -345 + 128], [200 - 128, 335 + 128]], { pane: 'imagebg', opacity: 0.4 }).addTo(mymap);
-
+    L.imageOverlay("images/Background.webp", [[-170 - 128, -230 + 128], [170 - 128, 230 + 128]], { pane: 'imagebg', opacity: 0.4 }).addTo(mymap);
+    
     mymap.createPane('imagebg');
     mymap.getPane('imagebg').style.zIndex = 50;
 
