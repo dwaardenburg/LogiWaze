@@ -4,7 +4,7 @@ global.L = require('leaflet');
 global.$ = require('jquery');
 
 global.VectorControlGrid = {
-    Create: (MaxNativeZoom, MaxZoom, Offset, API, RoadWidth, ControlWidth, GridDepth) => require('./IVectorControlGrid.js').Create(MaxZoom, Offset, API, RoadWidth, ControlWidth, GridDepth)
+    Create: (MaxNativeZoom, MaxZoom, Offset, API, RoadWidth, ControlWidth, GridDepth) => require('./IVectorControlGrid.js').Create(MaxNativeZoom, MaxZoom, Offset, API, RoadWidth, ControlWidth, GridDepth)
 };
 
 global.VectorTextGrid = {

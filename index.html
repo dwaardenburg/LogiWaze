@@ -40,19 +40,19 @@
         if (location.protocol !== 'https:' && (location.hostname.toLowerCase() == "www.logiwaze.com" || location.hostname.toLowerCase() == "logiwaze.com"))
             location.replace('https:'.concat(location.href.substring(location.protocol.length)));
 
-        var build="0ac7bb5180dfa97a2cb25cab12c67b9a3af11ebb";
+        var build="0af90a721677e20e7aa984dffdf91b353804d617";
         if ("serviceWorker" in navigator) {
 
             window.addEventListener("load", function () {
                 navigator.serviceWorker
-                    .register("ServiceWorker.js?a46f972633d6a4e960d5f1ed4130864a")
+                    .register("ServiceWorker.js?ffcbe114fc0df9c3ab14bba7098c3e4c")
                     .then(function (res) { return res.update(); })
                     .catch(function (err) { console.log("service worker not registered", err); })
             });
         }
 
     </script>
-    <script src="dist/FoxholeRouter.js?912370cc2d39cfb0475281cef460c56c"></script>
+    <script src="dist/FoxholeRouter.js?7bdca2e84c50fab466742967f4074d37"></script>
     <script type="text/javascript">
 
         var urlParams = new URLSearchParams(window.location.search);
@@ -69,6 +69,7 @@
                 bounds: L.latLngBounds(L.latLng(-256, 0), L.latLng(0, 256)),
                 autoPan: false,
                 maxBounds: L.latLngBounds(L.latLng(-384, -256), L.latLng(128, 512)),
+	    maxZoom: 8
 
             });
         L.imageOverlay("images/Background.webp", [[-200 - 128, -345 + 128], [200 - 128, 335 + 128]], { pane: 'imagebg', opacity: 0.4 }).addTo(mymap);
@@ -156,6 +157,8 @@
 
             return element.offsetHeight;
         }
+
+        var build="0af90a721677e20e7aa984dffdf91b353804d617";
 
         APIManager.update(function () {
 
