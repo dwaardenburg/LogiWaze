@@ -22,12 +22,12 @@
                 for (var i = 0; i < Paths.features.length; i++) {
                     var feature = Paths.features[i];
                     var scratch = {};
-                    for (var k = 0; k < feature.geometry.coordinates.length; k++) {
-                        var p = feature.geometry.coordinates[k];
+                    for (var j = 0; j < feature.geometry.coordinates.length; j++) {
+                        var p = feature.geometry.coordinates[j];
                         var hash = p[0].toFixed(3).concat("|").concat(p[1].toFixed(3));
                         if (scratch[hash] === true) {
-                            feature.geometry.coordinates.splice(k, 1);
-                            k--;
+                            feature.geometry.coordinates.splice(j, 1);
+                            j--;
                         }
                         else
                             scratch[hash] = true;
@@ -39,7 +39,7 @@
                     }
                 }
 
-                for (var i = 0; i < Paths.features.length; i++) {
+                for (i = 0; i < Paths.features.length; i++) {
                     var feature = Paths.features[i];
                     var warden_features = new Array();
                     var colonial_features = new Array();
@@ -47,13 +47,12 @@
                     var last_ownership = "NONE";
                     var last_p = null;
 
-                    for (var k = 0; k < feature.geometry.coordinates.length; k++) {
-                        var p = feature.geometry.coordinates[k];
+                    for (var j = 0; j < feature.geometry.coordinates.length; j++) {
+                        var p = feature.geometry.coordinates[j];
                         var hash = p[0].toFixed(3).concat("|").concat(p[1].toFixed(3));
-                        var increment = (k === 0 || k == feature.geometry.coordinates.length - 1) ? 1 : 2;
+                        var increment = (j === 0 || j == feature.geometry.coordinates.length - 1) ? 1 : 2;
 
                         Intersections[hash] = Intersections[hash] == null ? increment : (Intersections[hash] + increment);
-
 
                         if (BorderCache[hash] == null)
                             BorderCache[hash] = feature.properties.region;
@@ -62,7 +61,7 @@
 
                         var region = Paths.features[i].properties.region;
                         var ownership = !(region in API.mapControl) ? "OFFLINE" : API.ownership(p[0], p[1], region).ownership;
-                        JSONRoads._layers[keys[i]]._latlngs[k].ownership = ownership;
+                        JSONRoads._layers[keys[i]]._latlngs[j].ownership = ownership;
 
                         if (API.mapControl[feature.properties.region] != null && ownership != "OFFLINE" && region in API.mapControl)
                             all_features.push(p);
@@ -70,7 +69,7 @@
                         if (ownership != "OFFLINE" && ownership != "" && region in API.mapControl) {
 
                             var fso = ownership === "COLONIALS" ? colonial_features : warden_features;
-                            if (k > 0 && last_ownership != ownership && ownership != "NONE") {
+                            if (j > 0 && last_ownership != ownership && ownership != "NONE") {
                                 var fs = last_ownership === "COLONIALS" ? colonial_features : warden_features;
                                 break_feature_set = fs.length > 0 && (last_p[0] != p[0] || last_p[1] != p[1]);
                             }
@@ -91,7 +90,6 @@
                                 }
                             }
 
-
                             if (ownership == "NONE") {
                                 warden_features.push(p);
                                 colonial_features.push(p);
@@ -108,7 +106,6 @@
                         ColonialRoutes.features.push({ type: "Feature", properties: Paths.features[i].properties, geometry: { type: "LineString", coordinates: colonial_features } });
                     if (all_features.length > 1)
                         MainRoutes.features.push({ type: "Feature", properties: Paths.features[i].properties, geometry: { type: "LineString", coordinates: all_features } });
-
                 }
 
                 var GridDepth = 6;
@@ -124,153 +121,122 @@
 
                 regions.forEach(region => ControlLayer.addHex(region.x, region.y, w, h, !(region.name in API.mapControl)));
 
-                var resolveIcon = function (ic) {
-                    if (ic.icon == null)
+                var resolveIcon = function (icon) {
+                    if (icon.id == null)
                         return null;
 
-                    if (ic.icon == 56 || ic.icon == 5)
-                        icon = 'MapIconStaticBase1';
-                    else if (ic.icon == 35)
-                        icon = "MapIconSafehouse";
-                    else if (ic.icon == 57 || ic.icon == 6)
-                        icon = 'MapIconStaticBase2';
-                    else if (ic.icon == 58 || ic.icon == 7)
-                        icon = 'MapIconStaticBase3';
-                    else if (ic.icon == 27)
-                        icon = 'MapIconKeep'
-                    else if (ic.icon >= 45 && ic.icon <= 47)
-                        icon = 'MapIconRelicBase';
-                    else if (ic.icon == 17)
-                        icon = 'MapIconManufacturing';
-                    else if (ic.icon == 51)
-                        icon = 'MapIconMassProductionFactory';
-                    else if (ic.icon == 34)
-                        icon = 'MapIconFactory';
-                    else if (ic.icon == 33)
-                        icon = 'MapIconStorageFacility';
-                    else if (ic.icon == 39)
-                        icon = 'MapIconConstructionYard';
-                    else if (ic.icon == 52)
-                        icon = 'MapIconSeaport';
+                    if (icon.id == 56 || icon.id == 5)
+                        icon.name = 'MapIconStaticBase1';
+                    else if (icon.id == 35)
+                        icon.name = "MapIconSafehouse";
+                    else if (icon.id == 57 || icon.id == 6)
+                        icon.name = 'MapIconStaticBase2';
+                    else if (icon.id == 58 || icon.id == 7)
+                        icon.name = 'MapIconStaticBase3';
+                    else if (icon.id == 27)
+                        icon.name = 'MapIconKeep'
+                    else if (icon.id >= 45 && icon.id <= 47)
+                        icon.name = 'MapIconRelicBase';
+                    else if (icon.id == 17)
+                        icon.name = 'MapIconManufacturing';
+                    else if (icon.id == 51)
+                        icon.name = 'MapIconMassProductionFactory';
+                    else if (icon.id == 34)
+                        icon.name = 'MapIconFactory';
+                    else if (icon.id == 33)
+                        icon.name = 'MapIconStorageFacility';
+                    else if (icon.id == 39)
+                        icon.name = 'MapIconConstructionYard';
+                    else if (icon.id == 52)
+                        icon.name = 'MapIconSeaport';
                     else
                         return null;
 
-                    if (ic.ownership == "WARDENS")
-                        icon = icon.concat('Warden');
-                    else if (ic.ownership == "COLONIALS")
-                        icon = icon.concat('Colonial');
-                    else if (ic.ownership == "NONE");
+                    if (icon.control == "WARDENS")
+                        icon.name = icon.name.concat('Warden');
+                    else if (icon.control == "COLONIALS")
+                        icon.name = icon.name.concat('Colonial');
+                    else if (icon.control == "NONE");
                     else
                         return null;
 
-
-                    return icon.concat('.webp');
+                    return icon.name.concat('.webp');
                 };
 
-                var resolveResource = function (ic) {
-                    if (ic.icon == null)
+                var resolveResource = function (icon) {
+                    if (icon.id == null)
                         return null;
 
-                    if (ic.icon == 20)
+                    if (icon.id == 20)
                         return 'MapIconSalvage.webp';
-                    if (ic.icon == 21)
+                    if (icon.id == 21)
                         return 'MapIconComponents.webp';
-                    if (ic.icon == 23)
+                    if (icon.id == 23)
                         return 'MapIconSulfur.webp';
-                    if (ic.icon == 32)
+                    if (icon.id == 32)
                         return 'MapIconSulfurMine.webp';
-                    if (ic.icon == 38)
+                    if (icon.id == 38)
                         return 'MapIconSalvageMine.webp';
-                    if (ic.icon == 40)
+                    if (icon.id == 40)
                         return 'MapIconComponentMine.webp';
-                    if (ic.icon == 41)
+                    if (icon.id == 41)
                         return 'MapIconOilWell.webp';
 
                     return null;
                 }
 
-                var rkeys = Object.keys(API.resources);
-                var keys = Object.keys(API.mapControl);
+                var key, data, icon
 
-                for (var t of Object.keys(API.resources)) {
-                    var region = API.resources[t];
-                    for (var k of Object.keys(region)) {
-                        var th = region[k];
-                        if (th.nuked) {
-                            var data = {
-                                ownership: th.control,
-                                icon: th.mapIcon
-                            };
-                            var icon = resolveResource(data);
-                            ControlLayer.addIcon(icon, th.x, th.y, th.nuked, 0, 9);
-                        }
-                    }
-                }
-
-                for (var t of Object.keys(API.mapControl)) {
-                    var region = API.mapControl[t];
-                    for (var k of Object.keys(region)) {
-                        var th = region[k];
-                        if (th.nuked) {
-                            var data = {
-                                ownership: th.control,
-                                icon: th.mapIcon
-                            };
-                            var icon = resolveIcon(data);
-                            ControlLayer.addIcon(icon, th.x, th.y, th.nuked, 0, 9);
-                        }
-                    }
-                }
-
-                for (var t of Object.keys(API.resources)) {
-                    var region = API.resources[t];
-                    for (var k of Object.keys(region)) {
-
-                        var th = region[k];
-                        var data = {
-                            ownership: th.control,
-                            icon: th.mapIcon
+                for (i of Object.keys(API.resources)) {
+                    region = API.resources[i];
+                    for (key of Object.keys(region)) {
+                        data = {
+                            id: region[key].mapIcon,
+                            control: region[key].control
                         };
-                        var icon = resolveResource(data);
-                        ControlLayer.addIcon(icon, th.x, th.y, false, 0, 9);
+                        icon = resolveResource(data);
+                        if (region[key].nuked) {
+                            ControlLayer.addIcon(icon, region[key].x, region[key].y, region[key].nuked, 0, 9);
+                        }
+                        ControlLayer.addIcon(icon, region[key].x, region[key].y, false, 0, 9);
                     }
                 }
 
-                for (var t of Object.keys(API.mapControl)) {
-                    var region = API.mapControl[t];
-                    for (var k of Object.keys(region)) {
-                        var th = region[k];
-                        var data = {
-                            ownership: th.control,
-                            icon: th.mapIcon
+                for (i of Object.keys(API.mapControl)) {
+                    region = API.mapControl[i];
+                    for (key of Object.keys(region)) {
+                        data = {
+                            id: region[key].mapIcon,
+                            control: region[key].control
                         };
-                        var icon = resolveIcon(data);
-                        ControlLayer.addIcon(icon, th.x, th.y, false, 0, 9);
+                        icon = resolveIcon(data);
+                        if (region[key].nuked) {
+                            ControlLayer.addIcon(icon, region[key].x, region[key].y, region[key].nuked, 0, 9);
+                        }
+                        ControlLayer.addIcon(icon, region[key].x, region[key].y, false, 0, 9);
                     }
                 }
 
-                var ks = Object.keys(towns);
-                for (var t = 0; t < ks.length; t++) {
-                    var th = towns[ks[t]];
-                    if (th.major != 1) {
-                        var ownership = API.ownership(th.x + 128, th.y - 128, th.region).ownership;
+                var tkeys = Object.keys(towns);
+
+                for (i = 0; i < tkeys.length; i++) {
+                    if (towns[tkeys[i]].major != 1) {
+                        var ownership = API.ownership(towns[tkeys[i]].x + 128, towns[tkeys[i]].y - 128, towns[tkeys[i]].region).ownership;
                         var control = ownership == "COLONIALS" ? 0 : (ownership == "WARDENS" ? 1 : 2);
-                        RegionLabels.addText(Recase(ks[t]), ks[t], control, th.x, th.y, 5, 9, '#bbbbbb');
+                        RegionLabels.addText(Recase(tkeys[i]), tkeys[i], control, towns[tkeys[i]].x, towns[tkeys[i]].y, 5, 9, '#bbbbbb');
                     }
                 }
 
-                for (var t = 0; t < ks.length; t++) {
-                    var th = towns[ks[t]];
-                    if (th.major == 1) {
-                        var ownership = API.ownership(th.x + 128, th.y - 128, th.region).ownership;
+                for (i = 0; i < tkeys.length; i++) {
+                    if (towns[tkeys[i]].major == 1) {
+                        var ownership = API.ownership(towns[tkeys[i]].x + 128, towns[tkeys[i]].y - 128, towns[tkeys[i]].region).ownership;
                         var control = ownership == "COLONIALS" ? 0 : (ownership == "WARDENS" ? 1 : 2);
-                        RegionLabels.addText(Recase(ks[t]), ks[t], control, th.x, th.y, 3, 9, '#fff');
+                        RegionLabels.addText(Recase(tkeys[i]), tkeys[i], control, towns[tkeys[i]].x, towns[tkeys[i]].y, 3, 9, '#fff');
                     }
                 }
 
-                for (var i = 0; i < API.regions.length; i++)
+                for (i = 0; i < API.regions.length; i++)
                     RegionLabels.addText(Recase(API.regions[i].realName), API.regions[i].realName, 4, API.regions[i].x, API.regions[i].y, 0, 3, '#ffffff', 2.5);
-
 
                 for (var credit of [ // wow these are all wrong now
                     { text: "Hayden Grove", x: (139.079 - 128) * 0.90726470872655477280009094078879, y: (-155.292 + 128) * 0.90726470872655477280009094078879 },
@@ -282,17 +248,17 @@
                 )
                 RegionLabels.addText(Recase(credit.text), credit.text, control, credit.x, credit.y, 7, 9, '#DAA520');
 
-                for (var key in JSONRoads._layers) {
+                for (key in JSONRoads._layers) {
                     var layer = JSONRoads._layers[key];
-                    for (var k = 1; k < layer._latlngs.length; k++) {
-                        var region = layer.feature.properties.region;
-                        var lat = layer._latlngs[k - 1].lat;
-                        var lng = layer._latlngs[k - 1].lng;
-                        var lat2 = layer._latlngs[k].lat;
-                        var lng2 = layer._latlngs[k].lng;
+                    for (i = 1; i < layer._latlngs.length; i++) {
+                        region = layer.feature.properties.region;
+                        var lat = layer._latlngs[i - 1].lat;
+                        var lng = layer._latlngs[i - 1].lng;
+                        var lat2 = layer._latlngs[i].lat;
+                        var lng2 = layer._latlngs[i].lng;
                         var tier = layer.feature.properties.tier;
                         if (lat != null && lng != null && lat2 != null && lng2 != null) {
-                            let control = layer._latlngs[k - 1].ownership;
+                            let control = layer._latlngs[i - 1].ownership;
                             ControlLayer.addRoad([[lat, lng], [lat2, lng2]], { control: control == "COLONIALS" ? 0 : (control == "WARDENS" ? 1 : (control == "OFFLINE" ? 2 : 3)), tier: tier });
                         }
                     }
@@ -333,7 +299,6 @@
                         e = {
                             newSize: { x: window.innerWidth, y: window.innerHeight }
                         };
-
 
                     if (ControlLayer.loaded && RegionLabels.loaded) {
                         var parent_parent_transform = copy_paste_canvas.parentElement.parentElement.style.transform;
@@ -378,8 +343,8 @@
                     resizer();
                 });
 
-                mymap.on('resize', (e) => resizer());
-                mymap.on('moveend', (e) => resizer());
+                mymap.on('resize', () => resizer());
+                mymap.on('moveend', () => resizer());
 
                 var playbutton = '<svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:a="http://ns.adobe.com/AdobeSVGViewerExtensions/3.0/" x="0px" y="0px" width="32px" height="32px" viewBox="20 20 173.7 173.7" enable-background="new 0 0 213.7 213.7" xml:space="preserve"><polygon class="triangle" id="XMLID_18_" fill="none" stroke-width="15" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10" points="73.5,62.5 148.5,105.8 73.5,149.1 "/></svg>'
 
@@ -421,7 +386,7 @@
                     NetworkLayer: L.layerGroup().addTo(mymap),
 
                     calculateAngle: function (v1, v2) {
-                        angle = Math.atan2(v2[1] - v1[1], v2[0] - v1[0]);
+                        var angle = Math.atan2(v2[1] - v1[1], v2[0] - v1[0]);
                         if (angle < 0)
                             angle += Math.PI * 2;
                         return angle;
@@ -434,19 +399,19 @@
 
                     pathFinder: new PathFinder(MainRoutes, {
                         compact: null,
-                        weightFn: function (a, b, props) { var dx = a[0] - b[0]; var dy = a[1] - b[1]; return Math.sqrt(dx * dx + dy * dy); }
+                        weightFn: function (a, b) { var dx = a[0] - b[0]; var dy = a[1] - b[1]; return Math.sqrt(dx * dx + dy * dy); }
                     }),
 
                     setRoute: (route) => { FoxholeRouter.currentRoute = route; },
 
                     wardenPathFinder: WardenRoutes != null && WardenRoutes.features != null && WardenRoutes.features.length > 0 ? new PathFinder(WardenRoutes, {
                         compact: null,
-                        weightFn: function (a, b, props) { var dx = a[0] - b[0]; var dy = a[1] - b[1]; return Math.sqrt(dx * dx + dy * dy); }
+                        weightFn: function (a, b) { var dx = a[0] - b[0]; var dy = a[1] - b[1]; return Math.sqrt(dx * dx + dy * dy); }
                     }) : null,
 
                     colonialPathFinder: ColonialRoutes != null && ColonialRoutes.features != null && ColonialRoutes.features.length > 0 ? new PathFinder(ColonialRoutes, {
                         compact: null,
-                        weightFn: function (a, b, props) { var dx = a[0] - b[0]; var dy = a[1] - b[1]; return Math.sqrt(dx * dx + dy * dy); }
+                        weightFn: function (a, b) { var dx = a[0] - b[0]; var dy = a[1] - b[1]; return Math.sqrt(dx * dx + dy * dy); }
                     }) : null,
 
                     hideLabels: function () {
@@ -658,7 +623,6 @@
                         this.render_view(copy_paste_canvas, scale);
                     },
 
-
                     render_view: function (c, scale) {
                         if (scale == null)
                             scale = 2; // temporarily disabled: window.devicePixelRatio;// 2;
@@ -731,8 +695,6 @@
                         let cam = mymap.getPixelBounds();
                         let cx = cam.min.x;
                         let cy = cam.min.y;
-
-
 
                         if (this.Control.routeSelected != null) {
                             ctx.save();
@@ -808,11 +770,7 @@
                         return FoxholeRouter.cardinalDirections[parseInt(Math.round((angle / (Math.PI * 2)) * 8)) % 8];
                     },
 
-                    LocateTown: function (name) {
-
-                    },
-
-                    route: function (waypoints, callback, context, options) {
+                    route: function (waypoints, callback, context) {
                         highlighter.clearLayers();
                         // modify new waypoints to find closest ones
                         for (var i = 0; i < waypoints.length; i++) {
@@ -820,10 +778,10 @@
                             var distance = 0.0;
                             for (var key in FoxholeRouter.Roads._layers) {
                                 var layer = FoxholeRouter.Roads._layers[key];
-                                for (var k = 0; k < layer._latlngs.length; k++) {
-                                    var lat = layer._latlngs[k].lat;
+                                for (var j = 0; j < layer._latlngs.length; j++) {
+                                    var lat = layer._latlngs[j].lat;
                                     var wplat = waypoints[i].latLng.lat;
-                                    var lng = layer._latlngs[k].lng;
+                                    var lng = layer._latlngs[j].lng;
                                     var wplng = waypoints[i].latLng.lng;
                                     var distance_squared = (lat - wplat) * (lat - wplat) + (lng - wplng) * (lng - wplng);
                                     if (!closestPoint || distance_squared < distance) {
@@ -841,7 +799,7 @@
                         var no_warden_path = false;
                         var no_colonial_path = false;
 
-                        for (var i = 0; i < waypoints.length - 1; i++) {
+                        for (i = 0; i < waypoints.length - 1; i++) {
                             var start = waypoints[i].latLng;
                             var finish = waypoints[i + 1].latLng;
                             if (path == null)
@@ -915,7 +873,6 @@
                                     var hash = opath.path[i][0].toFixed(3).concat("|").concat(opath.path[i][1].toFixed(3));
                                     var lastHash = opath.path[i - 1][0].toFixed(3).concat("|").concat(opath.path[i - 1][1].toFixed(3));
                                     var borderStart = BorderCrossings[lastHash] === 1;
-                                    var borderEnd = BorderCrossings[hash] === 1;
                                     var intersection = Intersections[hash] > 2 || i == 1 || i == opath.path.length - 1;
 
                                     if (intersection || borderStart) { /* if this is an intersection or border */
@@ -993,16 +950,16 @@
                         if (path === null)
                             call({ status: -1, message: "Could not find a route" }, []);
                         else {
-
+                            var routes
                             if (path != null && (
                                 (wardenPath != null && wardenPath.path.length == path.path.length && wardenPath.path.reduce(function (result, value, index, array) { if (!result) return false; return path.path[index][0] == wardenPath.path[index][0] && path.path[index][1] == wardenPath.path[index][1]; }))
                                 ||
                                 (colonialPath != null && colonialPath.path.length == path.path.length && colonialPath.path.reduce(function (result, value, index, array) { if (!result) return false; return path.path[index][0] == colonialPath.path[index][0] && path.path[index][1] == colonialPath.path[index][1]; }))
                             )
                             )
-                                var routes = [];
+                                routes = [];
                             else
-                                var routes = [route_builder("shortest-route", path, waypoints)];
+                                routes = [route_builder("shortest-route", path, waypoints)];
 
                             if (wardenPath != null)
                                 routes.unshift(route_builder("warden-route", wardenPath, waypoints));
