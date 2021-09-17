@@ -1,5 +1,5 @@
 ﻿define(['leaflet', 'json-loader!../json/Roads.geojson', './geojson-path-finder/index.js', 'leaflet-routing-machine', '../json/towns.json', 'jquery'],
-    function (L, Paths, PathFinder, routing_machine, towns) {
+    function (L, Paths, PathFinder, towns) {
 
         return {
             FoxholeRouter: function (mymap, API) {
