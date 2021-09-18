@@ -45,7 +45,7 @@ define(['leaflet', 'intersects'],
                     return tile;
 
                 var zoom = Math.pow(2, coords.z);
-                var lineWidth = .2 * Math.pow(2, coords.z);
+                var lineWidth = .05 * Math.pow(2, coords.z);
                 var shadow = lineWidth * .5 / Math.pow(2, c.t.max_zoom);
 
                 c.ctx.save();
@@ -523,7 +523,13 @@ define(['leaflet', 'intersects'],
 
         return {
             Create: (MaxNativeZoom, MaxZoom, Offset, API, RoadWidth, ControlWidth, GridDepth) => {
-                var u = new VectorControlGridPrototype({ updateWhenZooming: false, noWrap: true, maxZoom: MaxZoom, minZoom: 0 });
+                var u = new VectorControlGridPrototype(
+                    {
+                        updateWhenZooming: false,
+                        noWrap: true,
+                        maxZoom: MaxZoom,
+                        minZoom: 0
+                    });
 
                 var size = u.getTileSize();
 

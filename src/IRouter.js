@@ -219,7 +219,7 @@
                     if (towns[tkeys[i]].major != 1) {
                         var ownership = API.ownership(towns[tkeys[i]].x + 128, towns[tkeys[i]].y - 128, towns[tkeys[i]].region).ownership;
                         var control = ownership == "COLONIALS" ? 0 : (ownership == "WARDENS" ? 1 : 2);
-                        RegionLabels.addText(Recase(tkeys[i]), tkeys[i], control, towns[tkeys[i]].x, towns[tkeys[i]].y, 5, 9, '#bbbbbb');
+                        RegionLabels.addText(Recase(tkeys[i]), tkeys[i], control, towns[tkeys[i]].x, towns[tkeys[i]].y, 6, 9, '#bbbbbb');
                     }
                 }
 

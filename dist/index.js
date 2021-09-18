@@ -1,4 +1,3 @@
-var urlParams = new URLSearchParams(window.location.search);
 window.beta = false;
 
 var mymap = L.map('mapid',
@@ -13,11 +12,13 @@ var mymap = L.map('mapid',
         maxBounds: L.latLngBounds(L.latLng(-384, -256), L.latLng(128, 512)),
         maxZoom: 8
     });
+
 L.imageOverlay("images/Background.webp", [[-170 - 128, -230 + 128], [170 - 128, 230 + 128]], { pane: 'imagebg', opacity: 0.4 }).addTo(mymap);
 
 mymap.createPane('imagebg');
 mymap.getPane('imagebg').style.zIndex = 50;
 
+var urlParams = new URLSearchParams(window.location.search);
 var shard = urlParams.get('shard');
 
 var APIManager = API.Create();
@@ -106,9 +107,7 @@ function getPanelVisibleHeight(element) {
 var build="0af90a721677e20e7aa984dffdf91b353804d617";
 
 APIManager.update(function () {
-
     var Router = FoxholeRouter.Create(mymap, APIManager);
-
     var Geocoder = FoxholeGeocoder.Create(APIManager);
 
     Router.VectorControlGrid.build = "?".concat(build);
@@ -151,7 +150,7 @@ APIManager.update(function () {
         copy_paste_button.appendChild(document.createElement("div"));
         x.after(copy_paste_button);
         copy_paste_button.onclick = function () {
-            navigator.clipboard.writeText(location.href).then(function () { });
+            navigator.clipboard.writeText(location.href);
             copy_paste_button.classList.remove("dirty");
         };
 
@@ -202,58 +201,6 @@ APIManager.update(function () {
     mymap.fitBounds([[-256, 0], [0, 256]], { paddingBottomRight: [getPanelVisibleWidth(), getPanelVisibleHeight()] });
     ResumeAutoZoom();
 
-    function createButton(label, container, image) {
-        var btn = L.DomUtil.create('img', '', container);
-        btn.setAttribute('src', image);
-        btn.setAttribute('style', 'max-width: 32px; max-height: 32px; margin: 4px;');
-        btn.innerHTML = label;
-        return btn;
-    }
-
-    var mm = { prevent_double_click: false };
-
-    mymap.on('click', function (e) {
-        mm.timer = setTimeout(function () {
-            if (!mm.prevent_double_click) {
-
-                let u = document.getElementsByClassName('leaflet-control-layers')[0];
-                if (u.classList.contains('leaflet-control-layers-expanded')) {
-                    u.classList.remove('leaflet-control-layers-expanded');
-                }
-                else {
-                    var container = L.DomUtil.create('div'),
-                        startBtn = createButton('Start here', container, 'images/ray-start-arrow.svg'),
-                        destBtn = createButton('End here', container, 'images/ray-end.svg');
-
-                    L.DomEvent.on(startBtn, 'click', function () {
-                        Router.Control.spliceWaypoints(0, 1, e.latlng);
-                        mymap.closePopup();
-                    });
-
-                    L.DomEvent.on(destBtn, 'click', function () {
-                        Router.Control.spliceWaypoints(Router.Control.getWaypoints().length - 1, 1, e.latlng);
-                        mymap.closePopup();
-                    });
-
-                    container.setAttribute('style', 'width: 66px; padding: 0');
-
-                    if (APIManager.calculateRegion(e.latlng.lng, e.latlng.lat) != null) {
-                        L.popup()
-                            .setContent(container)
-                            .setLatLng(e.latlng)
-                            .openOn(mymap);
-                    }
-                }
-            }
-            mm.prevent_double_click = false;
-        }, 400);
-    });
-
-    mymap.on("dblclick", function () {
-        clearTimeout(mm.timer);
-        mm.prevent_double_click = true;
-    });
-
     var waypoints = [];
     var active_layers = {};
     var no_update = false;
@@ -264,34 +211,35 @@ APIManager.update(function () {
         var maxX = null;
         var maxY = null;
         var count = 0;
+        var point
         for (var i = 0; i < waypoints.length; i++) {
-            var u = waypoints[i].latLng;
-            if (u != null) {
+            point = waypoints[i].latLng;
+            if (point != null) {
                 count++;
-                if (minX == null || u.lng < minX)
-                    minX = u.lng;
-                if (minY == null || u.lat < minY)
-                    minY = u.lat;
-                if (maxX == null || u.lng > maxX)
-                    maxX = u.lng;
-                if (maxY == null || u.lat > maxY)
-                    maxY = u.lat;
+                if (minX == null || point.lng < minX)
+                    minX = point.lng;
+                if (minY == null || point.lat < minY)
+                    minY = point.lat;
+                if (maxX == null || point.lng > maxX)
+                    maxX = point.lng;
+                if (maxY == null || point.lat > maxY)
+                    maxY = point.lat;
             }
         }
 
         if (CurrentRoute != null)
             for (i = 0; i < CurrentRoute.coordinates.length; i++) {
-                var u = CurrentRoute.coordinates[i];
-                if (u != null) {
+                point = CurrentRoute.coordinates[i];
+                if (point != null) {
                     count++;
-                    if (minX == null || u.lng < minX)
-                        minX = u.lng;
-                    if (minY == null || u.lat < minY)
-                        minY = u.lat;
-                    if (maxX == null || u.lng > maxX)
-                        maxX = u.lng;
-                    if (maxY == null || u.lat > maxY)
-                        maxY = u.lat;
+                    if (minX == null || point.lng < minX)
+                        minX = point.lng;
+                    if (minY == null || point.lat < minY)
+                        minY = point.lat;
+                    if (maxX == null || point.lng > maxX)
+                        maxX = point.lng;
+                    if (maxY == null || point.lat > maxY)
+                        maxY = point.lat;
                 }
             }
 
@@ -300,7 +248,23 @@ APIManager.update(function () {
             var rangeY = maxY - minY;
             var buffer = .05;
             PauseAutoZoom();
-            mymap.fitBounds([[minY - rangeY * buffer, minX - rangeX * buffer], [minY + (1.0 + buffer * 2.0) * rangeY, minX + (1.0 + buffer * 2.0) * rangeX]], { paddingBottomRight: [getPanelVisibleWidth(), getPanelVisibleHeight()] });
+            mymap.fitBounds(
+                [
+                    [
+                        minY - rangeY * buffer,
+                        minX - rangeX * buffer
+                    ],
+                    [
+                        minY + (1.0 + buffer * 2.0) * rangeY,
+                        minX + (1.0 + buffer * 2.0) * rangeX
+                    ]
+                ],
+                {
+                    paddingBottomRight: [
+                        getPanelVisibleWidth(),
+                        getPanelVisibleHeight()
+                    ]
+                });
             ResumeAutoZoom();
             AutoZoom = true;
         }
@@ -413,7 +377,6 @@ APIManager.update(function () {
 
         var center = [(E + W) * .5 - .5 * xoffset, (N + S) * .5 - .5 * yoffset];
 
-
         l = l.concat(':').concat(Math.round(center[0] * 1000) / 1000).concat(',').concat(Math.round(center[1] * 1000) / 1000).concat(',').concat(zoom);
 
         if (location.hash != l) {
@@ -422,6 +385,84 @@ APIManager.update(function () {
             location.hash = l;
         }
     }
+
+    function createButton(label, container, image) {
+        var btn = L.DomUtil.create('img', '', container);
+        btn.setAttribute('src', image);
+        btn.setAttribute('style', 'max-width: 32px; max-height: 32px; margin: 4px;');
+        btn.innerHTML = label;
+        return btn;
+    }
+
+    var mm = {
+        prevent_double_click: false,
+        timer: ""
+    };
+
+    mymap.on('contextmenu', function (event) {
+        mm.timer = setTimeout(function () {
+            if (!mm.prevent_double_click) {
+
+                let u = document.getElementsByClassName('leaflet-control-layers')[0];
+                if (u.classList.contains('leaflet-control-layers-expanded')) {
+                    u.classList.remove('leaflet-control-layers-expanded');
+                }
+                else {
+                    var container = L.DomUtil.create('div'),
+                        startBtn = createButton('Start here', container, 'images/ray-start-arrow.svg'),
+                        destBtn = createButton('End here', container, 'images/ray-end.svg');
+
+                    L.DomEvent.on(startBtn, 'click', function () {
+                        Router.Control.spliceWaypoints(0, 1, event.latlng);
+                        mymap.closePopup();
+                    });
+
+                    L.DomEvent.on(destBtn, 'click', function () {
+                        Router.Control.spliceWaypoints(Router.Control.getWaypoints().length - 1, 1, event.latlng);
+                        mymap.closePopup();
+                    });
+
+                    container.setAttribute('style', 'width: 66px; padding: 0');
+
+                    if (APIManager.calculateRegion(event.latlng.lng, event.latlng.lat) != null) {
+                        L.popup()
+                            .setContent(container)
+                            .setLatLng(event.latlng)
+                            .openOn(mymap);
+                    }
+                }
+            }
+            mm.prevent_double_click = false;
+        }, 400);
+    });
+
+    mymap.doubleClickZoom.disable()
+    mymap.on("dblclick", function (event) {
+        var Region = APIManager.calculateRegion(event.latlng.lng, event.latlng.lat)
+        if (Region != null) {
+            var h = 256 / 14;
+            var w = h * 2 / Math.sqrt(3);
+            mymap.fitBounds(
+                [
+                    [
+                        APIManager.remapXY(Region).y - h - 128,
+                        APIManager.remapXY(Region).x + w + 128
+                    ],
+                    [
+                        APIManager.remapXY(Region).y + h - 128,
+                        APIManager.remapXY(Region).x - w + 128
+                    ]
+                ],
+                {
+                    paddingBottomRight: [
+                        getPanelVisibleWidth(),
+                        getPanelVisibleHeight()
+                    ]
+                });
+        }
+        clearTimeout(mm.timer);
+        mm.prevent_double_click = true;
+    });
 
     mymap.on('overlayadd', function (event) {
         if (no_update) return;
@@ -585,10 +626,10 @@ APIManager.update(function () {
         }
     }
 
-    active_layers["Road Quality"] = (layers & 16) != 0;
     active_layers["Borders"] = (layers & 2) != 0;
     active_layers["Warden Roads"] = (layers & 4) != 0;
     active_layers["Colonial Roads"] = (layers & 8) != 0;
+    active_layers["Road Quality"] = (layers & 16) != 0;
     active_layers["Uncontrolled Roads"] = (layers & 32) != 0;
     active_layers["Refineries"] = (layers & 64) != 0;
     active_layers["Factories"] = (layers & 128) != 0;
