@@ -6,6 +6,10 @@ hexwidth = 1024
 hexheight = 888
 sat_hexwidth = 2048
 sat_hexheight = 1776
+woldmap_width = 5644
+woldmap_height = 6216
+
+resampling_filter = Image.LANCZOS
 
 hex_dir = 'images/Hexes/'
 sat_hex_dir = 'images/sat_hexes/'
@@ -27,7 +31,7 @@ hexagon = hexagon_generator(sat_hexwidth / 2, offset = (sat_hexwidth / 4, 0))
 draw.polygon(list(hexagon), outline = 'white', fill = 'white')
 hex_mask.save(hex_mask_path, "webp")
 
-#Convert files into .webp and clean up other files in source folders
+# Convert files into .webp and clean up other files in source folders
 for filename in os.listdir(hex_dir):
     if os.path.splitext(filename)[1] == ".TGA":
         file_path = os.path.join(hex_dir, filename)
@@ -42,7 +46,7 @@ for filename in os.listdir(hex_dir):
         except Exception as e:
             print('Failed to delete %s. Reason: %s' % (file_path, e))
 
-#Convert files into .webp and clean up other files in source folders
+# Convert files into .webp and clean up other files in source folders
 for filename in os.listdir(sat_hex_dir):
     if os.path.splitext(filename)[1] == ".png":
         file_path = os.path.join(sat_hex_dir, filename)
@@ -110,22 +114,25 @@ for filename in os.listdir(hex_dir):
         if hexname == "MapViperPitHex": osy, osx = oy - 1.5 * hexheight, ox + .75 * hexwidth
         if hexname == "MapMooringCountyHex": osy, osx = oy - 1.5 * hexheight, ox - .75 * hexwidth
 
-        #open hex image file and paste into source map image
+        # open hex image file and paste into source map image
         file_path = os.path.join(hex_dir, filename)
         hex_image = Image.open(file_path).convert('RGBA')
         hexmap.paste(hex_image, (int(osx - hexwidth / 2), int(osy - hexheight / 2)), hex_image)
 
-        #height offset required for cropping square image to hex image
+        # height offset required for cropping square image to hex image
         satosy = (sat_hexwidth - sat_hexheight) / 2
 
-        #open hex image file and paste into source map image after cropping and resizing
+        # open hex image file and paste into source map image after cropping and resizing
         sat_file_path = os.path.join(sat_hex_dir, filename)
         sat_hex_image = Image.open(sat_file_path).convert('RGBA')
         sat_hex_image = sat_hex_image.crop((0, 0 + satosy, sat_hexwidth, sat_hexheight + satosy))
-        sat_hex_image = sat_hex_image.resize((hexwidth, hexheight), Image.BICUBIC)
+        sat_hex_image = sat_hex_image.resize((hexwidth, hexheight), resampling_filter)
         sat_hexmap.paste(sat_hex_image, (int(osx - hexwidth / 2), int(osy - hexheight / 2)), hex_image)
 
         print("Placed " + hexname.replace('Map','').replace('Hex',' Hex'))
-        
+
+# ugly fix to force woldmap size
+hexmap = hexmap.resize((woldmap_width, woldmap_height), resampling_filter)
 hexmap.save(outfilepath, 'webp')
+sat_hexmap = sat_hexmap.resize((woldmap_width, woldmap_height), resampling_filter)
 sat_hexmap.save(sat_outfilepath, 'webp')
