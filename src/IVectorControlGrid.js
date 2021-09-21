@@ -10,6 +10,20 @@ define(['leaflet', 'intersects'],
             zoomScale: function (zoom) { return .65 * (1 + this.max_zoom - zoom); },
             pixelScale: 1,
             build: "",
+
+            createTile: function (coords, done) {
+                let scale = Math.pow(2, coords.z);
+                if (coords.x < 0 || coords.x >= scale || coords.y < 0 || coords.y >= scale || coords.z < 0) {
+                    let t = L.DomUtil.create('canvas', 'leaflet-tile');
+                    let size = this.getTileSize();
+                    t.width = this.pixelScale * size.x;
+                    t.height = this.pixelScale * size.y;
+                    setTimeout(() => done(null, t), 0);
+                    return t;
+                }
+                return this.renderer({ t: this, coords: coords, done: done }, 1);
+            },
+
             drawHex: (ctx, x, y, w, h, scale) => {
                 ctx.lineWidth = scale;
                 ctx.beginPath();
@@ -144,9 +158,9 @@ define(['leaflet', 'intersects'],
             },
 
             drawIcons: function (c) {
-                function makeOnLoadCallback(icon, u) {
+                function makeOnLoadCallback(icon, ControlGrid) {
                     return function () {
-                        var callbacks = u.imageCache[icon].callbacks;
+                        var callbacks = ControlGrid.imageCache[icon].callbacks;
                         for (var i = 0; i < callbacks.length; i++)
                             callbacks[i]();
                     };
@@ -225,6 +239,115 @@ define(['leaflet', 'intersects'],
                 }
                 if (c.tile.pendingLoad == 0)
                     c.t.yield(c, 8);
+            },
+
+            drawRoads: function (c) {
+                var coords = c.coords;
+                let tile = c.tile;
+                let ctx = c.ctx;
+
+                ctx.lineJoin = 'miter';
+                ctx.lineCap = 'round';
+
+                var scale = Math.pow(2, c.t.grid_depth - coords.z);
+                var start_x = Math.floor(coords.x * scale);
+                var start_y = Math.floor(coords.y * scale);
+
+                var end_x = Math.ceil((coords.x + 1) * scale);
+                var end_y = Math.ceil((coords.y + 1) * scale);
+
+                var depth_inverse = Math.pow(2, coords.z);
+                var sources = c.t.road_sources;
+                var offset = c.t.offset;
+                var outerWidth = c.t.RoadWidth * depth_inverse;
+                var innerWidth = c.t.ControlWidth * depth_inverse;
+                var grid_x_size = c.t.grid_x_size;
+                var grid_y_size = c.t.grid_y_size;
+                var controls = c.t.controls;
+                var quality = c.t.quality;
+                let pixelScale = c.t.pixelScale;
+                function draw(i, start_x, start_y, end_x, end_y, x, y, step) {
+                    var startTime = Date.now();
+                    if (step == 1) {
+                        if (quality) {
+                            var tiers = ['', '#957458', '#94954e', '#5a9565'];
+                            ctx.lineWidth = outerWidth;
+                            for (; y < end_y; y++, x = start_x)
+                                for (; x < end_x; x++, i = 0) {
+
+                                    if (x >= 0 && y >= 0 && x < grid_x_size && y < grid_y_size) {
+                                        for (; i < sources[x][y].length; i++) {
+
+                                            var source = sources[x][y][i];
+                                            ctx.strokeStyle = tiers[source.options.tier];
+                                            ctx.beginPath();
+                                            var coordsx = coords.x * tile.width / pixelScale;
+                                            var coordsy = coords.y * tile.height / pixelScale;
+                                            var x1 = (source.points[0][1] + offset[0]) * depth_inverse - coordsx;
+                                            var y1 = (source.points[0][0] + offset[1]) * depth_inverse - coordsy;
+                                            var x2 = (source.points[1][1] + offset[0]) * depth_inverse - coordsx;
+                                            var y2 = (source.points[1][0] + offset[1]) * depth_inverse - coordsy;
+                                            ctx.moveTo(x1, y1);
+                                            ctx.lineTo(x2, y2);
+                                            ctx.stroke();
+                                            if (Date.now() - startTime > 3) {
+                                                setTimeout(() => draw(i, start_x, start_y, end_x, end_y, x, y, step), 0);
+                                                return;
+                                            }
+                                        }
+                                    }
+                                    if (Date.now() - startTime > 3) {
+                                        setTimeout(() => draw(i, start_x, start_y, end_x, end_y, x, y, step), 0);
+                                        return;
+                                    }
+                                }
+
+                        }
+                        // move to step 2, reset all starting values (only once)
+                        step = 2;
+                        x = start_x;
+                        y = start_y;
+                        i = 0;
+                    }
+
+                    if (step == 2) {
+                        ctx.lineWidth = innerWidth;
+                        var colors = ['#516C4B', '#235683', '#303030', '#CCCCCC'];
+
+                        for (; y <= end_y; y++, x = start_x)
+                            for (; x <= end_x; x++, i = 0)
+                                if (x >= 0 && y >= 0 && x < grid_x_size && y < grid_y_size) {
+                                    for (; i < sources[x][y].length; i++) {
+                                        source = sources[x][y][i];
+                                        if (controls[source.options.control]) {
+                                            ctx.strokeStyle = colors[source.options.control];
+                                            ctx.beginPath();
+                                            coordsx = coords.x * tile.width / pixelScale;
+                                            coordsy = coords.y * tile.height / pixelScale;
+                                            x1 = (source.points[0][1] + offset[0]) * depth_inverse - coordsx;
+                                            y1 = (source.points[0][0] + offset[1]) * depth_inverse - coordsy;
+                                            x2 = (source.points[1][1] + offset[0]) * depth_inverse - coordsx;
+                                            y2 = (source.points[1][0] + offset[1]) * depth_inverse - coordsy;
+                                            ctx.moveTo(x1, y1);
+                                            ctx.lineTo(x2, y2);
+                                            ctx.stroke();
+                                        }
+                                        if (Date.now() - startTime > 3) {
+                                            setTimeout(() => draw(i, start_x, start_y, end_x, end_y, x, y, step), 0);
+                                            return;
+                                        }
+                                    }
+                                    if (Date.now() - startTime > 3) {
+                                        setTimeout(() => draw(i, start_x, start_y, end_x, end_y, x, y, step), 0);
+                                        return;
+                                    }
+
+                                }
+                        c.t.yield(c, 6);
+                        return;
+                    }
+                }
+                draw(0, start_x, start_y, end_x, end_y, start_x, start_y, 1);
             },
 
             renderer: function (c, phase) {
@@ -348,115 +471,6 @@ define(['leaflet', 'intersects'],
                 }
             },
 
-            drawRoads: function (c) {
-                var coords = c.coords;
-                let tile = c.tile;
-                let ctx = c.ctx;
-
-                ctx.lineJoin = 'miter';
-                ctx.lineCap = 'round';
-
-                var scale = Math.pow(2, c.t.grid_depth - coords.z);
-                var start_x = Math.floor(coords.x * scale);
-                var start_y = Math.floor(coords.y * scale);
-
-                var end_x = Math.ceil((coords.x + 1) * scale);
-                var end_y = Math.ceil((coords.y + 1) * scale);
-
-                var depth_inverse = Math.pow(2, coords.z);
-                var sources = c.t.road_sources;
-                var offset = c.t.offset;
-                var outerWidth = c.t.RoadWidth * depth_inverse;
-                var innerWidth = c.t.ControlWidth * depth_inverse;
-                var grid_x_size = c.t.grid_x_size;
-                var grid_y_size = c.t.grid_y_size;
-                var controls = c.t.controls;
-                var quality = c.t.quality;
-                let pixelScale = c.t.pixelScale;
-                function draw(i, start_x, start_y, end_x, end_y, x, y, step) {
-                    var startTime = Date.now();
-                    if (step == 1) {
-                        if (quality) {
-                            var tiers = ['', '#957458', '#94954e', '#5a9565'];
-                            ctx.lineWidth = outerWidth;
-                            for (; y < end_y; y++, x = start_x)
-                                for (; x < end_x; x++, i = 0) {
-
-                                    if (x >= 0 && y >= 0 && x < grid_x_size && y < grid_y_size) {
-                                        for (; i < sources[x][y].length; i++) {
-
-                                            var source = sources[x][y][i];
-                                            ctx.strokeStyle = tiers[source.options.tier];
-                                            ctx.beginPath();
-                                            var coordsx = coords.x * tile.width / pixelScale;
-                                            var coordsy = coords.y * tile.height / pixelScale;
-                                            var x1 = (source.points[0][1] + offset[0]) * depth_inverse - coordsx;
-                                            var y1 = (source.points[0][0] + offset[1]) * depth_inverse - coordsy;
-                                            var x2 = (source.points[1][1] + offset[0]) * depth_inverse - coordsx;
-                                            var y2 = (source.points[1][0] + offset[1]) * depth_inverse - coordsy;
-                                            ctx.moveTo(x1, y1);
-                                            ctx.lineTo(x2, y2);
-                                            ctx.stroke();
-                                            if (Date.now() - startTime > 3) {
-                                                setTimeout(() => draw(i, start_x, start_y, end_x, end_y, x, y, step), 0);
-                                                return;
-                                            }
-                                        }
-                                    }
-                                    if (Date.now() - startTime > 3) {
-                                        setTimeout(() => draw(i, start_x, start_y, end_x, end_y, x, y, step), 0);
-                                        return;
-                                    }
-                                }
-
-                        }
-                        // move to step 2, reset all starting values (only once)
-                        step = 2;
-                        x = start_x;
-                        y = start_y;
-                        i = 0;
-                    }
-
-                    if (step == 2) {
-                        ctx.lineWidth = innerWidth;
-                        var colors = ['#516C4B', '#235683', '#303030', '#CCCCCC'];
-
-                        for (; y <= end_y; y++, x = start_x)
-                            for (; x <= end_x; x++, i = 0)
-                                if (x >= 0 && y >= 0 && x < grid_x_size && y < grid_y_size) {
-                                    for (; i < sources[x][y].length; i++) {
-                                        source = sources[x][y][i];
-                                        if (controls[source.options.control]) {
-                                            ctx.strokeStyle = colors[source.options.control];
-                                            ctx.beginPath();
-                                            coordsx = coords.x * tile.width / pixelScale;
-                                            coordsy = coords.y * tile.height / pixelScale;
-                                            x1 = (source.points[0][1] + offset[0]) * depth_inverse - coordsx;
-                                            y1 = (source.points[0][0] + offset[1]) * depth_inverse - coordsy;
-                                            x2 = (source.points[1][1] + offset[0]) * depth_inverse - coordsx;
-                                            y2 = (source.points[1][0] + offset[1]) * depth_inverse - coordsy;
-                                            ctx.moveTo(x1, y1);
-                                            ctx.lineTo(x2, y2);
-                                            ctx.stroke();
-                                        }
-                                        if (Date.now() - startTime > 3) {
-                                            setTimeout(() => draw(i, start_x, start_y, end_x, end_y, x, y, step), 0);
-                                            return;
-                                        }
-                                    }
-                                    if (Date.now() - startTime > 3) {
-                                        setTimeout(() => draw(i, start_x, start_y, end_x, end_y, x, y, step), 0);
-                                        return;
-                                    }
-
-                                }
-                        c.t.yield(c, 6);
-                        return;
-                    }
-                }
-                draw(0, start_x, start_y, end_x, end_y, start_x, start_y, 1);
-            },
-
             calculateControl: function (c) {
 
                 var start = Date.now();
@@ -504,26 +518,13 @@ define(['leaflet', 'intersects'],
             },
 
             yield: (c, phase) =>
-                setTimeout(() => c.t.renderer(c, phase), 0),
-
-            createTile: function (coords, done) {
-                let scale = Math.pow(2, coords.z);
-                if (coords.x < 0 || coords.x >= scale || coords.y < 0 || coords.y >= scale || coords.z < 0) {
-                    let t = L.DomUtil.create('canvas', 'leaflet-tile');
-                    let size = this.getTileSize();
-                    t.width = this.pixelScale * size.x;
-                    t.height = this.pixelScale * size.y;
-                    setTimeout(() => done(null, t), 0);
-                    return t;
-                }
-                return this.renderer({ t: this, coords: coords, done: done }, 1);
-            }
+                setTimeout(() => c.t.renderer(c, phase), 0)
 
         });
 
         return {
             Create: (MaxNativeZoom, MaxZoom, Offset, API, RoadWidth, ControlWidth, GridDepth) => {
-                var u = new VectorControlGridPrototype(
+                var ControlGrid = new VectorControlGridPrototype(
                     {
                         updateWhenZooming: false,
                         noWrap: true,
@@ -531,42 +532,42 @@ define(['leaflet', 'intersects'],
                         minZoom: 0
                     });
 
-                var size = u.getTileSize();
+                var size = ControlGrid.getTileSize();
 
-                u.RoadWidth = RoadWidth;
-                u.ControlWidth = ControlWidth;
-                u.road_sources = [];
-                u.max_zoom = MaxZoom;
-                u.grid_depth = GridDepth;
-                u.offset = Offset;
+                ControlGrid.RoadWidth = RoadWidth;
+                ControlGrid.ControlWidth = ControlWidth;
+                ControlGrid.road_sources = [];
+                ControlGrid.max_zoom = MaxZoom;
+                ControlGrid.grid_depth = GridDepth;
+                ControlGrid.offset = Offset;
                 var max = Math.pow(2, GridDepth);
-                u.grid_x_size = max;
-                u.grid_x_width = (size.x / u.grid_x_size);
-                u.grid_y_size = max;
-                u.grid_y_height = (size.y / u.grid_y_size);
+                ControlGrid.grid_x_size = max;
+                ControlGrid.grid_x_width = (size.x / ControlGrid.grid_x_size);
+                ControlGrid.grid_y_size = max;
+                ControlGrid.grid_y_height = (size.y / ControlGrid.grid_y_size);
 
                 var max_road_width = Math.max(RoadWidth, ControlWidth);
 
                 var margin = max_road_width * max;
 
-                for (var x = 0; x < u.grid_x_size; x++) {
-                    u.road_sources.push([]);
-                    for (var y = 0; y < u.grid_y_size; y++)
-                        u.road_sources[x].push([]);
+                for (var x = 0; x < ControlGrid.grid_x_size; x++) {
+                    ControlGrid.road_sources.push([]);
+                    for (var y = 0; y < ControlGrid.grid_y_size; y++)
+                        ControlGrid.road_sources[x].push([]);
                 }
 
-                var marginx = margin / u.grid_x_size;
-                var marginy = margin / u.grid_y_size;
+                var marginx = margin / ControlGrid.grid_x_size;
+                var marginy = margin / ControlGrid.grid_y_size;
 
-                var addLine = (x, y, p, options, u) => {
-                    if (x >= 0 && y >= 0 && x < u.grid_x_size && y < u.grid_y_size)
-                        u.road_sources[x][y].push({ points: p, options: options });
+                var addLine = (x, y, p, options, ControlGrid) => {
+                    if (x >= 0 && y >= 0 && x < ControlGrid.grid_x_size && y < ControlGrid.grid_y_size)
+                        ControlGrid.road_sources[x][y].push({ points: p, options: options });
                 };
 
-                var gx = 1.0 / u.grid_x_width;
-                var gy = 1.0 / u.grid_y_height;
+                var gx = 1.0 / ControlGrid.grid_x_width;
+                var gy = 1.0 / ControlGrid.grid_y_height;
 
-                u.addRoad = (points, options) => {
+                ControlGrid.addRoad = (points, options) => {
 
                     var c = [[-points[0][0] - Offset[1], points[0][1] - Offset[0]], [-points[1][0] - Offset[1], points[1][1] - Offset[0]]]
                     var p = [[c[0][0], c[0][1]], [c[1][0], c[1][1]]];
@@ -591,29 +592,29 @@ define(['leaflet', 'intersects'],
                     var end_tile_x = Math.floor(Math.max(x2, x1) * gx + marginx);
                     var end_tile_y = Math.floor(Math.max(y2, y1) * gy + marginy);
 
-                    var width = u.grid_x_width + marginx * 2.0;
-                    var height = u.grid_y_height + marginy * 2.0;
+                    var width = ControlGrid.grid_x_width + marginx * 2.0;
+                    var height = ControlGrid.grid_y_height + marginy * 2.0;
 
                     for (var x = start_tile_x; x <= end_tile_x; x++)
                         for (var y = start_tile_y; y <= end_tile_y; y++)
-                            if (intersects.lineBox(x1, y1, x2, y2, x * u.grid_x_width - marginx, y * u.grid_y_height - marginy, width, height))
-                                addLine(x, y, p, options, u, Offset);
+                            if (intersects.lineBox(x1, y1, x2, y2, x * ControlGrid.grid_x_width - marginx, y * ControlGrid.grid_y_height - marginy, width, height))
+                                addLine(x, y, p, options, ControlGrid, Offset);
 
                 };
 
-                u.max_native_zoom = MaxNativeZoom;
-                u.offset = Offset;
-                u.Offset = Offset;
-                u.API = API;
+                ControlGrid.max_native_zoom = MaxNativeZoom;
+                ControlGrid.offset = Offset;
+                ControlGrid.Offset = Offset;
+                ControlGrid.API = API;
 
-                u.icon_sources = [];
-                u.icon_grid_x_size = Math.pow(2, MaxZoom);
-                u.icon_grid_x_width = u.pixelScale * size.x / u.grid_x_size;
-                u.icon_grid_y_size = Math.pow(2, MaxZoom);
-                u.icon_grid_y_height = u.pixelScale * size.y / u.grid_y_size;
-                u.imageCache = {};
-                u.addIcon = (icon, x, y, glow, zoomMin, zoomMax) => {
-                    u.icon_sources.push(
+                ControlGrid.icon_sources = [];
+                ControlGrid.icon_grid_x_size = Math.pow(2, MaxZoom);
+                ControlGrid.icon_grid_x_width = ControlGrid.pixelScale * size.x / ControlGrid.grid_x_size;
+                ControlGrid.icon_grid_y_size = Math.pow(2, MaxZoom);
+                ControlGrid.icon_grid_y_height = ControlGrid.pixelScale * size.y / ControlGrid.grid_y_size;
+                ControlGrid.imageCache = {};
+                ControlGrid.addIcon = (icon, x, y, glow, zoomMin, zoomMax) => {
+                    ControlGrid.icon_sources.push(
                         {
                             size: {
                                 width: .5,
@@ -629,10 +630,9 @@ define(['leaflet', 'intersects'],
                         });
                 };
 
-
-                u.hex_sources = [];
-                u.addHex = (x, y, width, height, offline) => {
-                    u.hex_sources.push(
+                ControlGrid.hex_sources = [];
+                ControlGrid.addHex = (x, y, width, height, offline) => {
+                    ControlGrid.hex_sources.push(
                         {
                             size: {
                                 width: width,
@@ -646,7 +646,7 @@ define(['leaflet', 'intersects'],
 
                 const loaded_events = [];
                 const unloaded_events = [];
-                u.when = function (event_name, event_action) {
+                ControlGrid.when = function (event_name, event_action) {
                     switch (event_name) {
                         case 'loaded':
                             loaded_events.push(event_action);
@@ -656,9 +656,9 @@ define(['leaflet', 'intersects'],
                             break;
                     }
                 };
-                u.on('loading', () => { for (let i of unloaded_events) i(); });
-                u.on('load', () => { for (let i of loaded_events) i(); });
-                return u;
+                ControlGrid.on('loading', () => { for (let i of unloaded_events) i(); });
+                ControlGrid.on('load', () => { for (let i of loaded_events) i(); });
+                return ControlGrid;
             }
         }
     });

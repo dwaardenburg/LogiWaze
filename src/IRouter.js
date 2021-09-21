@@ -2,15 +2,10 @@
     function (L, Paths, PathFinder, routing_machine, towns) {
         return {
             FoxholeRouter: function (mymap, API) {
-
-                function Recase(x) {
-                    return x.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase();
-                }
-
                 var JSONRoads = L.geoJSON(Paths);
-                var MainRoutes = { crs: Paths.crs, features: [], type: "FeatureCollection", filter: Paths.filter };
-                var WardenRoutes = { crs: Paths.crs, features: [], type: "FeatureCollection", filter: Paths.filter };
-                var ColonialRoutes = { crs: Paths.crs, features: [], type: "FeatureCollection", filter: Paths.filter };
+                var MainRoutes = {crs: Paths.crs, features: [], type: "FeatureCollection", filter: Paths.filter};
+                var WardenRoutes = {crs: Paths.crs, features: [], type: "FeatureCollection", filter: Paths.filter};
+                var ColonialRoutes = {crs: Paths.crs, features: [], type: "FeatureCollection", filter: Paths.filter};
 
                 var Intersections = {};
                 var BorderCache = {};
@@ -108,14 +103,52 @@
                 }
 
                 var GridDepth = 6;
-                var renderer = L.canvas({ tolerance: .2 }).addTo(mymap);
+                var renderer = L.canvas({tolerance: .2}).addTo(mymap);
                 var RegionLabels = VectorTextGrid.Create(8, [128, 128]);
                 var ControlLayer = VectorControlGrid.Create(5, 8, [128, 128], API, .30, .17, GridDepth);
-                var regions = API.regions;
                 var h = 256 / 7;
                 var w = h * 2 / Math.sqrt(3);
 
-                regions.forEach(region => ControlLayer.addHex(region.x, -region.y, w, h, !(region.name in API.mapControl)));
+                API.regions.forEach(region => ControlLayer.addHex(region.x, -region.y, w, h, !(region.name in API.mapControl)));
+
+                var key, data, icon
+
+                var resolveResource = function (icon) {
+                    if (icon.id == null)
+                        return null;
+
+                    if (icon.id == 20)
+                        return 'MapIconSalvage.webp';
+                    if (icon.id == 21)
+                        return 'MapIconComponents.webp';
+                    if (icon.id == 23)
+                        return 'MapIconSulfur.webp';
+                    if (icon.id == 32)
+                        return 'MapIconSulfurMine.webp';
+                    if (icon.id == 38)
+                        return 'MapIconSalvageMine.webp';
+                    if (icon.id == 40)
+                        return 'MapIconComponentMine.webp';
+                    if (icon.id == 41)
+                        return 'MapIconOilWell.webp';
+
+                    return null;
+                }
+
+                for (i of Object.keys(API.resources)) {
+                    region = API.resources[i];
+                    for (key of Object.keys(region)) {
+                        data = {
+                            id: region[key].mapIcon,
+                            control: region[key].control
+                        };
+                        icon = resolveResource(data);
+                        if (region[key].nuked) {
+                            ControlLayer.addIcon(icon, region[key].x, region[key].y, region[key].nuked, 0, 9);
+                        }
+                        ControlLayer.addIcon(icon, region[key].x, region[key].y, false, 0, 9);
+                    }
+                }
 
                 var resolveIcon = function (icon) {
                     if (icon.id == null)
@@ -159,45 +192,6 @@
                     return icon.name.concat('.webp');
                 };
 
-                var resolveResource = function (icon) {
-                    if (icon.id == null)
-                        return null;
-
-                    if (icon.id == 20)
-                        return 'MapIconSalvage.webp';
-                    if (icon.id == 21)
-                        return 'MapIconComponents.webp';
-                    if (icon.id == 23)
-                        return 'MapIconSulfur.webp';
-                    if (icon.id == 32)
-                        return 'MapIconSulfurMine.webp';
-                    if (icon.id == 38)
-                        return 'MapIconSalvageMine.webp';
-                    if (icon.id == 40)
-                        return 'MapIconComponentMine.webp';
-                    if (icon.id == 41)
-                        return 'MapIconOilWell.webp';
-
-                    return null;
-                }
-
-                var key, data, icon
-
-                for (i of Object.keys(API.resources)) {
-                    region = API.resources[i];
-                    for (key of Object.keys(region)) {
-                        data = {
-                            id: region[key].mapIcon,
-                            control: region[key].control
-                        };
-                        icon = resolveResource(data);
-                        if (region[key].nuked) {
-                            ControlLayer.addIcon(icon, region[key].x, region[key].y, region[key].nuked, 0, 9);
-                        }
-                        ControlLayer.addIcon(icon, region[key].x, region[key].y, false, 0, 9);
-                    }
-                }
-
                 for (i of Object.keys(API.mapControl)) {
                     region = API.mapControl[i];
                     for (key of Object.keys(region)) {
@@ -213,21 +207,13 @@
                     }
                 }
 
-                var tkeys = Object.keys(towns);
-
-                for (i = 0; i < tkeys.length; i++) {
-                    if (towns[tkeys[i]].major != 1) {
-                        var ownership = API.ownership(towns[tkeys[i]].x + 128, towns[tkeys[i]].y - 128, towns[tkeys[i]].region).ownership;
-                        var control = ownership == "COLONIALS" ? 0 : (ownership == "WARDENS" ? 1 : 2);
-                        RegionLabels.addText(Recase(tkeys[i]), tkeys[i], control, towns[tkeys[i]].x, towns[tkeys[i]].y, 6, 9, '#bbbbbb');
-                    }
-                }
-
-                for (i = 0; i < tkeys.length; i++) {
-                    if (towns[tkeys[i]].major == 1) {
-                        var ownership = API.ownership(towns[tkeys[i]].x + 128, towns[tkeys[i]].y - 128, towns[tkeys[i]].region).ownership;
-                        var control = ownership == "COLONIALS" ? 0 : (ownership == "WARDENS" ? 1 : 2);
-                        RegionLabels.addText(Recase(tkeys[i]), tkeys[i], control, towns[tkeys[i]].x, towns[tkeys[i]].y, 3, 9, '#fff');
+                for (i of Object.keys(towns)) {
+                    var ownership = API.ownership(towns[i].x + 128, towns[i].y - 128, towns[i].region).ownership;
+                    var control = ownership == "COLONIALS" ? 0 : (ownership == "WARDENS" ? 1 : 2);
+                    if (towns[i].major == 1) {
+                        RegionLabels.addText(Recase(i), i, control, towns[i].x, towns[i].y, 3, 9, '#fff');
+                    } else {
+                        RegionLabels.addText(Recase(i), i, control, towns[i].x, towns[i].y, 6, 9, '#bbbbbb');
                     }
                 }
 
@@ -246,8 +232,7 @@
                     { text: "Fork of Malarthyn", x: 70.279 - 128, y: -103.977 + 128 },
                     { text: "Maybar's Finesse", x: 158.151 - 128, y: -101.223 + 128 }
 
-                ]
-                )
+                ])
                 RegionLabels.addText(Recase(credit.text), credit.text, control, credit.x, credit.y, 7, 9, '#DAA520');
 
                 for (key in JSONRoads._layers) {
@@ -366,12 +351,12 @@
                                 ctx.lineWidth = style.weight;
                                 ctx.opacity = style.opacity;
                                 let first = true;
-                                for (let s of this.Control.routeSelected.coordinates) {
-                                    let u = mymap.project(s);
+                                for (let coords of this.Control.routeSelected.coordinates) {
+                                    let project_point = mymap.project(coords);
                                     if (first)
-                                        ctx.moveTo(u.x - cx, u.y - cy);
+                                        ctx.moveTo(project_point.x - cx, project_point.y - cy);
                                     else
-                                        ctx.lineTo(u.x - cx, u.y - cy);
+                                        ctx.lineTo(project_point.x - cx, project_point.y - cy);
                                     first = false;
                                 }
                                 ctx.stroke();
@@ -787,6 +772,10 @@
                         ControlLayer.redraw();
                     },
                 };
+
+                function Recase(x) {
+                    return x.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase();
+                }
 
                 return FoxholeRouter;
             }
