@@ -1,6 +1,5 @@
 define(['leaflet', '../json/towns.json'], function (L, towns) {
     return {
-
         FoxholeGeocoder: function (API) {
             var l = Object.keys(towns);
             for (var i = 0; i < l.length; i++)

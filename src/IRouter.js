@@ -23,7 +23,7 @@
                 var road_keys = Object.keys(JSONRoads._layers);
                 var highlighter = L.layerGroup().addTo(mymap);
 
-                var i, key, data, icon, resource
+                var i, key, data, icon, resource, region
 
                 API.regions.forEach(region => ControlLayer.addHex(region.x, -region.y, hex_width, hex_height, !(region.name in API.mapControl)));
 
@@ -189,8 +189,8 @@
                         else if (BorderCache[hash] != feature.properties.region && feature.properties != null && feature.properties.region != null)
                             BorderCrossings[hash] = 1;
 
-                        var region = Paths.features[i].properties.region;
-                        var ownership = !(region in API.mapControl) ? "OFFLINE" : API.ownership(point[0], point[1], region).ownership;
+                        region = Paths.features[i].properties.region;
+                        ownership = !(region in API.mapControl) ? "OFFLINE" : API.ownership(point[0], point[1], region).ownership;
                         JSONRoads._layers[road_keys[i]]._latlngs[j].ownership = ownership;
 
                         if (API.mapControl[feature.properties.region] != null && ownership != "OFFLINE" && region in API.mapControl)
@@ -469,7 +469,7 @@
                                             geometry: {coordinates: [finish.lng, finish.lat]}
                                         });
                                 else {
-                                    var p = FoxholeRouter.wardenPathFinder.findPath(
+                                    p = FoxholeRouter.wardenPathFinder.findPath(
                                         {
                                             name: "path",
                                             geometry: {coordinates: [start.lng, start.lat]}
@@ -500,7 +500,7 @@
                                             geometry: {coordinates: [finish.lng, finish.lat]}
                                         });
                                 else {
-                                    var p = FoxholeRouter.colonialPathFinder.findPath(
+                                    p = FoxholeRouter.colonialPathFinder.findPath(
                                         {
                                             name: "path",
                                             geometry: {coordinates: [start.lng, start.lat]}

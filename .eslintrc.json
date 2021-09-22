@@ -24,5 +24,15 @@
     ],
     "rules": {
         "@typescript-eslint/no-var-requires": 0
+    },
+    "globals": {
+        "L": true,
+        "$": true,
+        "VectorControlGrid": true,
+        "VectorTextGrid": true,
+        "FoxholeRouter": true,
+        "API": true,
+        "FoxholeGeocoder": true,
+        "Panel": true
     }
 }

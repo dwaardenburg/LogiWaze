@@ -1,4 +1,3 @@
-const path = require('path');
 const TerserPlugin = require('terser-webpack-plugin');
 
 module.exports = {
@@ -6,7 +5,7 @@ module.exports = {
     app: './src/index.js',
   },
   output: {
-    filename: 'FoxholeRouter.js'
+    filename: 'main.js'
 	},
   optimization: {
     minimizer: [new TerserPlugin({

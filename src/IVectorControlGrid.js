@@ -15,9 +15,9 @@ define(['leaflet', 'intersects'],
                 let scale = Math.pow(2, coords.z);
                 if (coords.x < 0 || coords.x >= scale || coords.y < 0 || coords.y >= scale || coords.z < 0) {
                     let t = L.DomUtil.create('canvas', 'leaflet-tile');
-                    let size = this.getTileSize();
-                    t.width = this.pixelScale * size.x;
-                    t.height = this.pixelScale * size.y;
+                    let tile_size = this.getTileSize();
+                    t.width = this.pixelScale * tile_size.x;
+                    t.height = this.pixelScale * tile_size.y;
                     setTimeout(() => done(null, t), 0);
                     return t;
                 }
@@ -532,43 +532,42 @@ define(['leaflet', 'intersects'],
                         minZoom: 0
                     });
 
-                var size = ControlGrid.getTileSize();
+                var tile_size = ControlGrid.getTileSize();
 
                 ControlGrid.RoadWidth = RoadWidth;
                 ControlGrid.ControlWidth = ControlWidth;
-                ControlGrid.road_sources = [];
                 ControlGrid.max_zoom = MaxZoom;
                 ControlGrid.grid_depth = GridDepth;
                 ControlGrid.offset = Offset;
                 var max = Math.pow(2, GridDepth);
                 ControlGrid.grid_x_size = max;
-                ControlGrid.grid_x_width = (size.x / ControlGrid.grid_x_size);
+                ControlGrid.grid_x_width = (tile_size.x / ControlGrid.grid_x_size);
                 ControlGrid.grid_y_size = max;
-                ControlGrid.grid_y_height = (size.y / ControlGrid.grid_y_size);
+                ControlGrid.grid_y_height = (tile_size.y / ControlGrid.grid_y_size);
+                ControlGrid.max_native_zoom = MaxNativeZoom;
+                ControlGrid.offset = Offset;
+                ControlGrid.Offset = Offset;
+                ControlGrid.API = API;
+                ControlGrid.icon_grid_x_size = Math.pow(2, MaxZoom);
+                ControlGrid.icon_grid_x_width = ControlGrid.pixelScale * tile_size.x / ControlGrid.grid_x_size;
+                ControlGrid.icon_grid_y_size = Math.pow(2, MaxZoom);
+                ControlGrid.icon_grid_y_height = ControlGrid.pixelScale * tile_size.y / ControlGrid.grid_y_size;
+                ControlGrid.imageCache = {};
 
                 var max_road_width = Math.max(RoadWidth, ControlWidth);
 
                 var margin = max_road_width * max;
-
+                var marginx = margin / ControlGrid.grid_x_size;
+                var marginy = margin / ControlGrid.grid_y_size;
+                
+                ControlGrid.road_sources = [];
                 for (var x = 0; x < ControlGrid.grid_x_size; x++) {
                     ControlGrid.road_sources.push([]);
                     for (var y = 0; y < ControlGrid.grid_y_size; y++)
                         ControlGrid.road_sources[x].push([]);
                 }
 
-                var marginx = margin / ControlGrid.grid_x_size;
-                var marginy = margin / ControlGrid.grid_y_size;
-
-                var addLine = (x, y, p, options, ControlGrid) => {
-                    if (x >= 0 && y >= 0 && x < ControlGrid.grid_x_size && y < ControlGrid.grid_y_size)
-                        ControlGrid.road_sources[x][y].push({ points: p, options: options });
-                };
-
-                var gx = 1.0 / ControlGrid.grid_x_width;
-                var gy = 1.0 / ControlGrid.grid_y_height;
-
                 ControlGrid.addRoad = (points, options) => {
-
                     var c = [[-points[0][0] - Offset[1], points[0][1] - Offset[0]], [-points[1][0] - Offset[1], points[1][1] - Offset[0]]]
                     var p = [[c[0][0], c[0][1]], [c[1][0], c[1][1]]];
 
@@ -586,33 +585,29 @@ define(['leaflet', 'intersects'],
                     x2 += ext_x * marginx;
                     y2 += ext_y * marginy;
 
-                    var start_tile_x = Math.floor(Math.min(x1, x2) * gx - marginx);
-                    var start_tile_y = Math.floor(Math.min(y1, y2) * gy - marginy);
+                    var start_tile_x = Math.floor(Math.min(x1, x2) / ControlGrid.grid_x_width - marginx);
+                    var start_tile_y = Math.floor(Math.min(y1, y2) / ControlGrid.grid_y_height - marginy);
 
-                    var end_tile_x = Math.floor(Math.max(x2, x1) * gx + marginx);
-                    var end_tile_y = Math.floor(Math.max(y2, y1) * gy + marginy);
+                    var end_tile_x = Math.floor(Math.max(x2, x1) / ControlGrid.grid_x_width + marginx);
+                    var end_tile_y = Math.floor(Math.max(y2, y1) / ControlGrid.grid_y_height + marginy);
 
                     var width = ControlGrid.grid_x_width + marginx * 2.0;
                     var height = ControlGrid.grid_y_height + marginy * 2.0;
 
                     for (var x = start_tile_x; x <= end_tile_x; x++)
                         for (var y = start_tile_y; y <= end_tile_y; y++)
-                            if (intersects.lineBox(x1, y1, x2, y2, x * ControlGrid.grid_x_width - marginx, y * ControlGrid.grid_y_height - marginy, width, height))
-                                addLine(x, y, p, options, ControlGrid, Offset);
-
+                            if (intersects.lineBox(
+                                x1, y1,
+                                x2, y2,
+                                x * ControlGrid.grid_x_width - marginx,
+                                y * ControlGrid.grid_y_height - marginy,
+                                width, height
+                                ))
+                                if (x >= 0 && y >= 0 && x < ControlGrid.grid_x_size && y < ControlGrid.grid_y_size)
+                                ControlGrid.road_sources[x][y].push({ points: p, options: options });
                 };
 
-                ControlGrid.max_native_zoom = MaxNativeZoom;
-                ControlGrid.offset = Offset;
-                ControlGrid.Offset = Offset;
-                ControlGrid.API = API;
-
                 ControlGrid.icon_sources = [];
-                ControlGrid.icon_grid_x_size = Math.pow(2, MaxZoom);
-                ControlGrid.icon_grid_x_width = ControlGrid.pixelScale * size.x / ControlGrid.grid_x_size;
-                ControlGrid.icon_grid_y_size = Math.pow(2, MaxZoom);
-                ControlGrid.icon_grid_y_height = ControlGrid.pixelScale * size.y / ControlGrid.grid_y_size;
-                ControlGrid.imageCache = {};
                 ControlGrid.addIcon = (icon, x, y, glow, zoomMin, zoomMax) => {
                     ControlGrid.icon_sources.push(
                         {
