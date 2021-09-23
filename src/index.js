@@ -149,20 +149,14 @@ APIManager.update(function () {
         {},
         {
             '<img src="images/MapIcons/MapIconStaticBase3.webp" class="layer-icon">Town Halls': Router.TownHalls,
-            '<img src="images/MapIcons/fencing.webp" class="layer-icon">Borders': Router.Borders,
-            '<img src="images/MapIcons/road-route.webp" class="layer-icon">Road Quality': Router.RoadsCanvas,
-            '<img src="images/colonial-route.webp" class="layer-icon">Colonial Roads': Router.ColonialRoads,
-            '<img src="images/warden-route.webp" class="layer-icon">Warden Roads': Router.WardenRoads,
-            '<img src="images/shortest-route.webp" class="layer-icon">Uncontrolled Roads': Router.NeutralRoads,
-            '<img src="images/MapIcons/MapIconManufacturing.webp" class="layer-icon">Refineries': Router.Refineries,
-            '<img src="images/MapIcons/MapIconFactory.webp" class="layer-icon">Factories': Router.Factories,
-            '<img src="images/MapIcons/MapIconStorageFacility.webp" class="layer-icon">Storage': Router.Storage,
-            '<img src="images/MapIcons/MapIconSalvage.webp" class="layer-icon">Salvage': Router.Salvage,
-            '<img src="images/MapIcons/MapIconComponents.webp" class="layer-icon">Components': Router.Components,
-            '<img src="images/MapIcons/MapIconFuel.webp" class="layer-icon">Fuel': Router.Fuel,
-            '<img src="images/MapIcons/MapIconSulfur.webp" class="layer-icon">Sulfur': Router.Sulfur,
+            '<img src="images/MapIcons/MapIconSafehouse.webp" class="layer-icon">Safehouses': Router.Safehouses,
             '<img src="images/MapIcons/Control.webp" class="layer-icon">Control': Router.MapControl,
-            '<img src="images/MapIcons/Labels.webp" class="layer-icon">Labels': Router.Labels
+            '<img src="images/MapIcons/road-route.webp" class="layer-icon">Road Quality': Router.RoadQuality,
+            '<img src="images/MapIcons/road-control.webp" class="layer-icon">Road Control': Router.RoadControl,
+            '<img src="images/MapIcons/MapIconFactory.webp" class="layer-icon">Industry': Router.Industry,
+            '<img src="images/MapIcons/MapIconSalvage.webp" class="layer-icon">Resources': Router.Resources,
+            '<img src="images/MapIcons/Labels.webp" class="layer-icon">Labels': Router.Labels,
+            '<img src="images/MapIcons/hex_icon.webp" class="layer-icon">Borders': Router.Borders
         },
         {
             position: 'topleft',
@@ -350,50 +344,29 @@ APIManager.update(function () {
                     case "Town Halls":
                         counter |= 1;
                         break;
-                    case "Borders":
+                    case "Safehouses":
                         counter |= 2;
                         break;
-                    case "Warden Roads":
+                    case "Control":
                         counter |= 4;
                         break;
-                    case "Colonial Roads":
+                    case "Road Quality":
                         counter |= 8;
                         break;
-                    case "Road Quality":
+                    case "Road Control":
                         counter |= 16;
                         break;
-                    case "Uncontrolled Roads":
+                    case "Industry":
                         counter |= 32;
                         break;
-                    case "Refineries":
+                    case "Resources":
                         counter |= 64;
                         break;
-                    case "Factories":
+                    case "Labels":
                         counter |= 128;
                         break;
-                    case "Storage":
+                    case "Borders":
                         counter |= 256;
-                        break;
-                    case "Salvage":
-                        counter |= 512;
-                        break;
-                    case "Components":
-                        counter |= 1024;
-                        break;
-                    case "Fuel":
-                        counter |= 2048;
-                        break;
-                    case "Sulfur":
-                        counter |= 4096;
-                        break;
-                    case "Control":
-                        counter |= 8192;
-                        break;
-                    case "Labels":
-                        counter |= 16384;
-                        break;
-                    case "Basic Font":
-                        counter |= 32768;
                         break;
                 }
 
@@ -498,50 +471,32 @@ APIManager.update(function () {
     mymap.on('overlayadd', function (event) {
         if (no_update) return;
         switch (event.name.replace(/<.*> */, '')) {
-            case "Control":
-                Router.showControl();
-                break;
             case "Town Halls":
                 Router.showTownHalls();
                 break;
-            case "Refineries":
-                Router.showRefineries();
+            case "Safehouses":
+                Router.showSafehouses();
                 break;
-            case "Factories":
-                Router.showFactories();
-                break;
-            case "Fuel":
-                Router.showFuel();
-                break;
-            case "Components":
-                Router.showComponents();
-                break;
-            case "Storage":
-                Router.showStorage();
-                break;
-            case "Sulfur":
-                Router.showSulfur();
-                break;
-            case "Salvage":
-                Router.showSalvage();
-                break;
-            case "Warden Roads":
-                Router.showWarden();
-                break;
-            case "Colonial Roads":
-                Router.showColonial();
-                break;
-            case "Uncontrolled Roads":
-                Router.showNeutral();
+            case "Control":
+                Router.showControl();
                 break;
             case "Road Quality":
-                Router.showQuality();
+                Router.showRoadQuality();
                 break;
-            case "Borders":
-                Router.showBorders();
+            case "Road Control":
+                Router.showRoadControl();
+                break;
+            case "Industry":
+                Router.showIndustry();
+                break;
+            case "Resources":
+                Router.showResources();
                 break;
             case "Labels":
                 Router.showLabels();
+                break;
+            case "Borders":
+                Router.showBorders();
                 break;
         }
         active_layers[event.name.replace(/<.*> */, '')] = true;
@@ -551,50 +506,32 @@ APIManager.update(function () {
     mymap.on('overlayremove', function (event) {
         if (no_update) return;
         switch (event.name.replace(/<.*> */, '')) {
-            case "Control":
-                Router.hideControl();
-                break;
             case "Town Halls":
                 Router.hideTownHalls();
                 break;
-            case "Refineries":
-                Router.hideRefineries();
+            case "Safehouses":
+                Router.hideSafehouses();
                 break;
-            case "Factories":
-                Router.hideFactories();
-                break;
-            case "Fuel":
-                Router.hideFuel();
-                break;
-            case "Components":
-                Router.hideComponents();
-                break;
-            case "Storage":
-                Router.hideStorage();
-                break;
-            case "Sulfur":
-                Router.hideSulfur();
-                break;
-            case "Salvage":
-                Router.hideSalvage();
-                break;
-            case "Warden Roads":
-                Router.hideWarden();
-                break;
-            case "Colonial Roads":
-                Router.hideColonial();
-                break;
-            case "Uncontrolled Roads":
-                Router.hideNeutral();
+            case "Control":
+                Router.hideControl();
                 break;
             case "Road Quality":
-                Router.hideQuality();
+                Router.hideRoadQuality();
                 break;
-            case "Borders":
-                Router.hideBorders();
+            case "Road Control":
+                Router.hideRoadControl();
+                break;
+            case "Industry":
+                Router.hideIndustry();
+                break;
+            case "Resources":
+                Router.hideResources();
                 break;
             case "Labels":
                 Router.hideLabels();
+                break;
+            case "Borders":
+                Router.hideBorders();
                 break;
         }
         active_layers[event.name.replace(/<.*> */, '')] = false;
@@ -658,84 +595,54 @@ APIManager.update(function () {
     }
 
     active_layers["Town Halls"] = (layers & 1) != 0;
-    active_layers["Borders"] = (layers & 2) != 0;
-    active_layers["Warden Roads"] = (layers & 4) != 0;
-    active_layers["Colonial Roads"] = (layers & 8) != 0;
+    active_layers["Safehouses"] = (layers & 2) != 0;
+    active_layers["Control"] = (layers & 4) != 0;
+    active_layers["Road Control"] = (layers & 8) != 0;
     active_layers["Road Quality"] = (layers & 16) != 0;
-    active_layers["Uncontrolled Roads"] = (layers & 32) != 0;
-    active_layers["Refineries"] = (layers & 64) != 0;
-    active_layers["Factories"] = (layers & 128) != 0;
-    active_layers["Storage"] = (layers & 256) != 0;
-    active_layers["Salvage"] = (layers & 512) != 0;
-    active_layers["Components"] = (layers & 1024) != 0;
-    active_layers["Fuel"] = (layers & 2048) != 0;
-    active_layers["Sulfur"] = (layers & 4096) != 0;
-    active_layers["Control"] = (layers & 8192) != 0;
-    active_layers["Labels"] = (layers & 16384) != 0;
+    active_layers["Industry"] = (layers & 32) != 0;
+    active_layers["Resources"] = (layers & 64) != 0;
+    active_layers["Labels"] = (layers & 128) != 0;
+    active_layers["Borders"] = (layers & 256) != 0;
 
     var keys = Object.keys(active_layers);
     for (i = 0; i < keys.length; i++)
         if (false == active_layers[keys[i]])
             switch (keys[i].replace(/<.*> */, '')) {
-                case "Control":
-                    Router.hideControl();
-                    Router.MapControl.remove();
-                    break;
                 case "Town Halls":
                     Router.hideTownHalls();
                     Router.TownHalls.remove();
                     break;
-                case "Borders":
-                    Router.Borders.remove();
-                    Router.hideBorders();
+                case "Safehouses":
+                    Router.hideSafehouses();
+                    Router.Safehouses.remove();
                     break;
-                case "Warden Roads":
-                    Router.WardenRoads.remove();
-                    Router.hideWarden();
-                    break;
-                case "Colonial Roads":
-                    Router.ColonialRoads.remove();
-                    Router.hideColonial();
-                    break;
-                case "Uncontrolled Roads":
-                    Router.NeutralRoads.remove();
-                    Router.hideNeutral();
-                    break;
-                case "Refineries":
-                    Router.hideRefineries();
-                    Router.Refineries.remove();
-                    break;
-                case "Factories":
-                    Router.hideFactories();
-                    Router.Factories.remove();
-                    break;
-                case "Storage":
-                    Router.Storage.remove();
-                    Router.hideStorage();
-                    break;
-                case "Salvage":
-                    Router.Salvage.remove();
-                    Router.hideSalvage();
-                    break;
-                case "Components":
-                    Router.Components.remove();
-                    Router.hideComponents();
-                    break;
-                case "Fuel":
-                    Router.Fuel.remove();
-                    Router.hideFuel();
-                    break;
-                case "Sulfur":
-                    Router.Sulfur.remove();
-                    Router.hideSulfur();
+                case "Control":
+                    Router.hideControl();
+                    Router.MapControl.remove();
                     break;
                 case "Road Quality":
-                    Router.RoadsCanvas.remove();
-                    Router.hideQuality();
+                    Router.RoadQuality.remove();
+                    Router.hideRoadQuality();
+                    break;
+                case "Road Control":
+                    Router.RoadControl.remove();
+                    Router.hideRoadControl();
+                    break;
+                case "Industry":
+                    Router.Industry.remove();
+                    Router.hideIndustry();
+                    break;
+                case "Resources":
+                    Router.Resources.remove();
+                    Router.hideResources();
                     break;
                 case "Labels":
                     Router.Labels.remove();
                     Router.hideLabels();
+                    break;
+                case "Borders":
+                    Router.Borders.remove();
+                    Router.hideBorders();
                     break;
             }
 
