@@ -30,6 +30,7 @@
         "$": true,
         "VectorControlGrid": true,
         "VectorTextGrid": true,
+        "VectorIconGrid": true,
         "FoxholeRouter": true,
         "API": true,
         "FoxholeGeocoder": true,

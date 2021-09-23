@@ -15,6 +15,7 @@
                 var GridDepth = 6;
 
                 var RegionLabels = VectorTextGrid.Create(8, [128, 128]);
+                var IconLayer = VectorIconGrid.Create(5, 8, [128, 128]);
                 var ControlLayer = VectorControlGrid.Create(5, 8, [128, 128], API, .30, .17, GridDepth);
                 var hex_height = 256 / 7;
                 var hex_width = hex_height * 2 / Math.sqrt(3);
@@ -57,9 +58,9 @@
                         };
                         icon = resolveResource(data);
                         if (resource[key].nuked) {
-                            ControlLayer.addIcon(icon, resource[key].x, resource[key].y, resource[key].nuked, 0, 9);
+                            IconLayer.addIcon(icon, resource[key].x, resource[key].y, resource[key].nuked, 0, 9);
                         }
-                        ControlLayer.addIcon(icon, resource[key].x, resource[key].y, false, 0, 9);
+                        IconLayer.addIcon(icon, resource[key].x, resource[key].y, false, 0, 9);
                     }
                 }
 
@@ -114,9 +115,9 @@
                         };
                         icon = resolveIcon(data);
                         if (region[key].nuked) {
-                            ControlLayer.addIcon(icon, region[key].x, region[key].y, region[key].nuked, 0, 9);
+                            IconLayer.addIcon(icon, region[key].x, region[key].y, region[key].nuked, 0, 9);
                         }
-                        ControlLayer.addIcon(icon, region[key].x, region[key].y, false, 0, 9);
+                        IconLayer.addIcon(icon, region[key].x, region[key].y, false, 0, 9);
                     }
                 }
 
@@ -134,16 +135,16 @@
                     RegionLabels.addText(Recase(api_region.realName), api_region.realName, 4, api_region.x, api_region.y, 0, 3, '#ffffff', 2.5);
 
                 for (var credit of [ // wow these are all wrong now
-                    { text: "Hayden Grove", x: (139.079 - 128) * 0.90726470872655477280009094078879, y: (-155.292 + 128) * 0.90726470872655477280009094078879 },
-                    { text: "Steely Phil Bridge", x: (18.18 - 128) * 0.90726470872655477280009094078879, y: (-161.439 + 128) * 0.90726470872655477280009094078879 },
-                    { text: "Icanari Killing Fields", x: (134.071 - 128) * 0.90726470872655477280009094078879, y: (-143.104 + 128) * 0.90726470872655477280009094078879 },
-                    { text: "Kastow Peak", x: (124.817 - 128) * 0.90726470872655477280009094078879, y: (-122.72 + 128) * 0.90726470872655477280009094078879 },
-                    { text: "DragonZephyr Col", x: (119.176 - 128) * 0.90726470872655477280009094078879, y: (-83.464 + 128) * 0.90726470872655477280009094078879 },
-                    { text: "Skaj Sound", x: (49.826 - 128) * 0.90726470872655477280009094078879, y: (-102.048 + 128) * 0.90726470872655477280009094078879 },
-                    { text: "Inquisitor Silenus Trail", x: 75.701 - 128, y: -123.834 + 128 },
-                    { text: "Antraxen's Drive", x: 217.082 - 128, y: -136.754 + 128 },
-                    { text: "Fork of Malarthyn", x: 70.279 - 128, y: -103.977 + 128 },
-                    { text: "Maybar's Finesse", x: 158.151 - 128, y: -101.223 + 128 }
+                    {text: "Hayden Grove", x: (139.079 - 128) * 0.90726470872655477280009094078879, y: (-155.292 + 128) * 0.90726470872655477280009094078879},
+                    {text: "Steely Phil Bridge", x: (18.18 - 128) * 0.90726470872655477280009094078879, y: (-161.439 + 128) * 0.90726470872655477280009094078879},
+                    {text: "Icanari Killing Fields", x: (134.071 - 128) * 0.90726470872655477280009094078879, y: (-143.104 + 128) * 0.90726470872655477280009094078879},
+                    {text: "Kastow Peak", x: (124.817 - 128) * 0.90726470872655477280009094078879, y: (-122.72 + 128) * 0.90726470872655477280009094078879},
+                    {text: "DragonZephyr Col", x: (119.176 - 128) * 0.90726470872655477280009094078879, y: (-83.464 + 128) * 0.90726470872655477280009094078879},
+                    {text: "Skaj Sound", x: (49.826 - 128) * 0.90726470872655477280009094078879, y: (-102.048 + 128) * 0.90726470872655477280009094078879},
+                    {text: "Inquisitor Silenus Trail", x: 75.701 - 128, y: -123.834 + 128},
+                    {text: "Antraxen's Drive", x: 217.082 - 128, y: -136.754 + 128},
+                    {text: "Fork of Malarthyn", x: 70.279 - 128, y: -103.977 + 128},
+                    {text: "Maybar's Finesse", x: 158.151 - 128, y: -101.223 + 128}
 
                 ])
                 RegionLabels.addText(Recase(credit.text), credit.text, control, credit.x, credit.y, 7, 9, '#DAA520');
@@ -254,6 +255,7 @@
                 }
 
                 ControlLayer.addTo(mymap);
+                IconLayer.addTo(mymap);
                 RegionLabels.addTo(mymap);
 
                 var FoxholeRouter = {
@@ -669,11 +671,19 @@
                     },
 
                     hideTownHalls: function () {
-                        ControlLayer.disableIcons(['MapIconSafehouse.webp', 'MapIconSafehouseWarden.webp', 'MapIconSafehouseColonial.webp', 'MapIconStaticBase1.webp', 'MapIconStaticBase2.webp', 'MapIconStaticBase3.webp', 'MapIconKeep.webp', 'MapIconRelicBase.webp',
+                        IconLayer.disableIcons(['MapIconSafehouse.webp', 'MapIconSafehouseWarden.webp', 'MapIconSafehouseColonial.webp', 'MapIconStaticBase1.webp', 'MapIconStaticBase2.webp', 'MapIconStaticBase3.webp', 'MapIconKeep.webp', 'MapIconRelicBase.webp',
                             'MapIconStaticBase1Warden.webp', 'MapIconStaticBase2Warden.webp', 'MapIconStaticBase3Warden.webp', 'MapIconKeepWarden.webp', 'MapIconRelicBaseWarden.webp',
                             'MapIconStaticBase1Colonial.webp', 'MapIconStaticBase2Colonial.webp', 'MapIconStaticBase3Colonial.webp', 'MapIconKeepColonial.webp', 'MapIconRelicBaseColonial.webp'
                         ]);
-                        ControlLayer.redraw();
+                        IconLayer.redraw();
+                    },
+
+                    showTownHalls: function () {
+                        IconLayer.enableIcons(['MapIconSafehouse.webp', 'MapIconSafehouseWarden.webp', 'MapIconSafehouseColonial.webp', 'MapIconStaticBase1.webp', 'MapIconStaticBase2.webp', 'MapIconStaticBase3.webp', 'MapIconKeep.webp', 'MapIconRelicBase.webp',
+                            'MapIconStaticBase1Warden.webp', 'MapIconStaticBase2Warden.webp', 'MapIconStaticBase3Warden.webp', 'MapIconKeepWarden.webp', 'MapIconRelicBaseWarden.webp',
+                            'MapIconStaticBase1Colonial.webp', 'MapIconStaticBase2Colonial.webp', 'MapIconStaticBase3Colonial.webp', 'MapIconKeepColonial.webp', 'MapIconRelicBaseColonial.webp'
+                        ]);
+                        IconLayer.redraw();
                     },
 
                     showBorders: function () {
@@ -685,15 +695,7 @@
                         ControlLayer.drawHexes = false;
                         ControlLayer.redraw();
                     },
-
-                    showTownHalls: function () {
-                        ControlLayer.enableIcons(['MapIconSafehouse.webp', 'MapIconSafehouseWarden.webp', 'MapIconSafehouseColonial.webp', 'MapIconStaticBase1.webp', 'MapIconStaticBase2.webp', 'MapIconStaticBase3.webp', 'MapIconKeep.webp', 'MapIconRelicBase.webp',
-                            'MapIconStaticBase1Warden.webp', 'MapIconStaticBase2Warden.webp', 'MapIconStaticBase3Warden.webp', 'MapIconKeepWarden.webp', 'MapIconRelicBaseWarden.webp',
-                            'MapIconStaticBase1Colonial.webp', 'MapIconStaticBase2Colonial.webp', 'MapIconStaticBase3Colonial.webp', 'MapIconKeepColonial.webp', 'MapIconRelicBaseColonial.webp'
-                        ]);
-                        ControlLayer.redraw();
-                    },
-
+                    
                     hideControl: function () {
                         ControlLayer.draw = false;
                         ControlLayer.redraw();
@@ -735,8 +737,8 @@
                     },
 
                     hideNeutral: function () {
-                        ControlLayer.controls[3] = false;
                         ControlLayer.controls[2] = false;
+                        ControlLayer.controls[3] = false;
                         ControlLayer.redraw();
                     },
 
@@ -746,85 +748,75 @@
                         ControlLayer.redraw();
                     },
 
-                    hideOffline: function () {
-                        ControlLayer.controls[2] = false;
-                        ControlLayer.redraw();
-                    },
-
-                    showOffline: function () {
-                        ControlLayer.controls[2] = true;
-                        ControlLayer.redraw();
-                    },
-
                     hideSalvage: function () {
-                        ControlLayer.disableIcons(['MapIconSalvage.webp', 'MapIconSalvageMine.webp', 'MapIconSalvageWarden.webp', 'MapIconSalvageMineWarden.webp', 'MapIconSalvageColonial.webp', 'MapIconSalvageMineColonial.webp']);
-                        ControlLayer.redraw();
+                        IconLayer.disableIcons(['MapIconSalvage.webp', 'MapIconSalvageMine.webp', 'MapIconSalvageWarden.webp', 'MapIconSalvageMineWarden.webp', 'MapIconSalvageColonial.webp', 'MapIconSalvageMineColonial.webp']);
+                        IconLayer.redraw();
                     },
 
                     showSalvage: function () {
-                        ControlLayer.enableIcons(['MapIconSalvage.webp', 'MapIconSalvageMine.webp', 'MapIconSalvageWarden.webp', 'MapIconSalvageMineWarden.webp', 'MapIconSalvageColonial.webp', 'MapIconSalvageMineColonial.webp']);
-                        ControlLayer.redraw();
+                        IconLayer.enableIcons(['MapIconSalvage.webp', 'MapIconSalvageMine.webp', 'MapIconSalvageWarden.webp', 'MapIconSalvageMineWarden.webp', 'MapIconSalvageColonial.webp', 'MapIconSalvageMineColonial.webp']);
+                        IconLayer.redraw();
                     },
 
                     hideComponents: function () {
-                        ControlLayer.disableIcons(['MapIconComponents.webp', 'MapIconComponentMine.webp', 'MapIconComponentsWarden.webp', 'MapIconComponentMineWarden.webp', 'MapIconComponentsColonial.webp', 'MapIconComponentMineColonial.webp']);
-                        ControlLayer.redraw();
+                        IconLayer.disableIcons(['MapIconComponents.webp', 'MapIconComponentMine.webp', 'MapIconComponentsWarden.webp', 'MapIconComponentMineWarden.webp', 'MapIconComponentsColonial.webp', 'MapIconComponentMineColonial.webp']);
+                        IconLayer.redraw();
                     },
 
                     showComponents: function () {
-                        ControlLayer.enableIcons(['MapIconComponents.webp', 'MapIconComponentMine.webp', 'MapIconComponentsWarden.webp', 'MapIconComponentMineWarden.webp', 'MapIconComponentsColonial.webp', 'MapIconComponentMineColonial.webp']);
-                        ControlLayer.redraw();
-                    },
-
-                    hideStorage: function () {
-                        ControlLayer.disableIcons(['MapIconStorageFacility.webp', 'MapIconSeaport.webp', 'MapIconStorageFacilityWarden.webp', 'MapIconSeaportWarden.webp', 'MapIconStorageFacilityColonial.webp', 'MapIconSeaportColonial.webp']);
-                        ControlLayer.redraw();
-                    },
-
-                    showStorage: function () {
-                        ControlLayer.enableIcons(['MapIconStorageFacility.webp', 'MapIconSeaport.webp', 'MapIconStorageFacilityWarden.webp', 'MapIconSeaportWarden.webp', 'MapIconStorageFacilityColonial.webp', 'MapIconSeaportColonial.webp']);
-                        ControlLayer.redraw();
+                        IconLayer.enableIcons(['MapIconComponents.webp', 'MapIconComponentMine.webp', 'MapIconComponentsWarden.webp', 'MapIconComponentMineWarden.webp', 'MapIconComponentsColonial.webp', 'MapIconComponentMineColonial.webp']);
+                        IconLayer.redraw();
                     },
 
                     hideSulfur: function () {
-                        ControlLayer.disableIcons(['MapIconSulfur.webp', 'MapIconSulfurMine.webp', 'MapIconSulfurWarden.webp', 'MapIconSulfurMineWarden.webp', 'MapIconSulfurColonial.webp', 'MapIconSulfurMineColonial.webp']);
-                        ControlLayer.redraw();
+                        IconLayer.disableIcons(['MapIconSulfur.webp', 'MapIconSulfurMine.webp', 'MapIconSulfurWarden.webp', 'MapIconSulfurMineWarden.webp', 'MapIconSulfurColonial.webp', 'MapIconSulfurMineColonial.webp']);
+                        IconLayer.redraw();
                     },
 
                     showSulfur: function () {
-                        ControlLayer.enableIcons(['MapIconSulfur.webp', 'MapIconSulfurMine.webp', 'MapIconSulfurWarden.webp', 'MapIconSulfurMineWarden.webp', 'MapIconSulfurColonial.webp', 'MapIconSulfurMineColonial.webp']);
-                        ControlLayer.redraw();
+                        IconLayer.enableIcons(['MapIconSulfur.webp', 'MapIconSulfurMine.webp', 'MapIconSulfurWarden.webp', 'MapIconSulfurMineWarden.webp', 'MapIconSulfurColonial.webp', 'MapIconSulfurMineColonial.webp']);
+                        IconLayer.redraw();
+                    },
+
+                    showFuel: function () {
+                        IconLayer.enableIcons(['MapIconOilWell.webp', 'MapIconOilWellWarden.webp', 'MapIconOilWellColonial.webp']);
+                        IconLayer.redraw();
+                    },
+
+                    hideFuel: function () {
+                        IconLayer.disableIcons(['MapIconOilWell.webp', 'MapIconOilWellWarden.webp', 'MapIconOilWellColonial.webp']);
+                        IconLayer.redraw();
+                    },
+
+                    hideStorage: function () {
+                        IconLayer.disableIcons(['MapIconStorageFacility.webp', 'MapIconSeaport.webp', 'MapIconStorageFacilityWarden.webp', 'MapIconSeaportWarden.webp', 'MapIconStorageFacilityColonial.webp', 'MapIconSeaportColonial.webp']);
+                        IconLayer.redraw();
+                    },
+
+                    showStorage: function () {
+                        IconLayer.enableIcons(['MapIconStorageFacility.webp', 'MapIconSeaport.webp', 'MapIconStorageFacilityWarden.webp', 'MapIconSeaportWarden.webp', 'MapIconStorageFacilityColonial.webp', 'MapIconSeaportColonial.webp']);
+                        IconLayer.redraw();
                     },
 
                     hideRefineries: function () {
-                        ControlLayer.disableIcons(['MapIconManufacturing.webp', 'MapIconManufacturingWarden.webp', 'MapIconManufacturingColonial.webp']);
-                        ControlLayer.redraw();
+                        IconLayer.disableIcons(['MapIconManufacturing.webp', 'MapIconManufacturingWarden.webp', 'MapIconManufacturingColonial.webp']);
+                        IconLayer.redraw();
                     },
 
                     showRefineries: function () {
                         //
-                        ControlLayer.enableIcons(['MapIconManufacturing.webp', 'MapIconManufacturingWarden.webp', 'MapIconManufacturingColonial.webp']);
-                        ControlLayer.redraw();
-                    },
-
-                    showFuel: function () {
-                        ControlLayer.enableIcons(['MapIconOilWell.webp', 'MapIconOilWellWarden.webp', 'MapIconOilWellColonial.webp']);
-                        ControlLayer.redraw();
-                    },
-
-                    hideFuel: function () {
-                        ControlLayer.disableIcons(['MapIconOilWell.webp', 'MapIconOilWellWarden.webp', 'MapIconOilWellColonial.webp']);
-                        ControlLayer.redraw();
+                        IconLayer.enableIcons(['MapIconManufacturing.webp', 'MapIconManufacturingWarden.webp', 'MapIconManufacturingColonial.webp']);
+                        IconLayer.redraw();
                     },
 
                     showFactories: function () {
-                        ControlLayer.enableIcons(['MapIconFactory.webp', 'MapIconMassProductionFactory.webp', 'MapIconConstructionYard.webp', 'MapIconFactoryWarden.webp', 'MapIconMassProductionFactoryWarden.webp', 'MapIconConstructionYardWarden.webp', 'MapIconFactoryColonial.webp', 'MapIconMassProductionFactoryColonial.webp', 'MapIconConstructionYardColonial.webp']);
-                        ControlLayer.redraw();
+                        IconLayer.enableIcons(['MapIconFactory.webp', 'MapIconMassProductionFactory.webp', 'MapIconConstructionYard.webp', 'MapIconFactoryWarden.webp', 'MapIconMassProductionFactoryWarden.webp', 'MapIconConstructionYardWarden.webp', 'MapIconFactoryColonial.webp', 'MapIconMassProductionFactoryColonial.webp', 'MapIconConstructionYardColonial.webp']);
+                        IconLayer.redraw();
                     },
 
                     hideFactories: function () {
-                        ControlLayer.disableIcons(['MapIconFactory.webp', 'MapIconMassProductionFactory.webp', 'MapIconConstructionYard.webp', 'MapIconFactoryWarden.webp', 'MapIconMassProductionFactoryWarden.webp', 'MapIconConstructionYardWarden.webp', 'MapIconFactoryColonial.webp', 'MapIconMassProductionFactoryColonial.webp', 'MapIconConstructionYardColonial.webp']);
-                        ControlLayer.redraw();
+                        IconLayer.disableIcons(['MapIconFactory.webp', 'MapIconMassProductionFactory.webp', 'MapIconConstructionYard.webp', 'MapIconFactoryWarden.webp', 'MapIconMassProductionFactoryWarden.webp', 'MapIconConstructionYardWarden.webp', 'MapIconFactoryColonial.webp', 'MapIconMassProductionFactoryColonial.webp', 'MapIconConstructionYardColonial.webp']);
+                        IconLayer.redraw();
                     },
                 };
 
