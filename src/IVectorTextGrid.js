@@ -10,62 +10,47 @@ define(['leaflet', 'intersects'],
                     ctx.font = '70px Renner';
                     break;
                 case 4:
-                    ctx.font = '90px Renner';
+                    ctx.font = '120px Renner';
                     break;
             }
         }
 
         var VectorGridPrototype = L.GridLayer.extend({
-            zoomScale: function (zoom) { return .65 * (1 + this.max_zoom - zoom); },
+            zoomScale: function (zoom) {return .65 * (1 + this.MaxZoom - zoom);},
             shadowSize: 20,
             draw: true,
             pixelScale: window.devicePixelRatio,
-            recalculateSizes: function () {
-                var canvas = L.DomUtil.create('canvas', 'leaflet-tile');
-                var ctx = canvas.getContext('2d');
-                for (let source of this.sources) {
-                    controlToFont(source.control, ctx);
-                    var size = ctx.measureText(source.original_text);
-                    source.size = {
-                        width: (size.actualBoundingBoxRight - size.actualBoundingBoxLeft) / this.grid_x_size,
-                        height: (size.actualBoundingBoxAscent + size.actualBoundingBoxDescent) / this.grid_y_size
-                    };
-                }
-            },
 
             createTile: function (coords, done) {
-
                 var raw_scale = this.zoomScale(coords.z);
-
                 var hd_ratio = this.pixelScale;
-                var size = this.getTileSize();
-                var tile = null;
-                tile = L.DomUtil.create('canvas', 'leaflet-tile logiwaze-text');
+                var tile_size = this.getTileSize();
+                var tile = L.DomUtil.create('canvas', 'leaflet-tile logiwaze-text');
                 tile.crossorigin = "Anonymous";
                 tile.setAttribute("crossorigin", "Anonymous");
 
-                tile.width = size.x * hd_ratio;
-                tile.height = size.y * hd_ratio;
+                tile.width = tile_size.x * hd_ratio;
+                tile.height = tile_size.y * hd_ratio;
 
-                tile.style.width = (size.x * hd_ratio).toString().concat("px");
-                tile.style.height = (size.y * hd_ratio).toString().concat("px");
+                tile.style.width = tile.width.toString().concat("px");
+                tile.style.height = tile.height.toString().concat("px");
+
+                let ctx = tile.getContext('2d');
+                let zoom = Math.pow(2, coords.z);
+                let max = Math.pow(2, this.MaxZoom);
+                let sources = this.sources;
+                let shadowSize = this.shadowSize;
 
                 if (!this.draw) {
                     setTimeout(() => done(null, tile), 0);
                     return tile;
                 }
 
-                let ctx = tile.getContext('2d');
-
-                let zoom = Math.pow(2, coords.z);
-                let max = Math.pow(2, this.max_zoom);
-                let sources = this.sources;
-                let shadowSize = this.shadowSize;
                 function draw(i) {
                     var startTime = Date.now();
                     for (; i < sources.length; i++) {
                         let source = sources[i];
-                        if (coords.z >= source.zoomMin && coords.z < source.zoomMax) {
+                        if (coords.z >= source.MinZoom && coords.z < source.MaxZoom) {
 
                             let scale = raw_scale * source.scale;
                             let text_scale = hd_ratio * scale * zoom / max;
@@ -104,47 +89,64 @@ define(['leaflet', 'intersects'],
                 }
                 setTimeout(() => draw(0), 0);
                 return tile;
-            }
+            },
+
+            recalculateSizes: function () {
+                var canvas = L.DomUtil.create('canvas', 'leaflet-tile');
+                var ctx = canvas.getContext('2d');
+                for (let source of this.sources) {
+                    controlToFont(source.control, ctx);
+                    var text_size = ctx.measureText(source.original_text);
+                    source.size = {
+                        width: (text_size.actualBoundingBoxRight - text_size.actualBoundingBoxLeft) / this.grid_x_size,
+                        height: (text_size.actualBoundingBoxAscent + text_size.actualBoundingBoxDescent) / this.grid_y_size
+                    };
+                }
+            },
+
+            
         });
 
         return {
             Create: function (MaxZoom, Offset) {
-                var u = new VectorGridPrototype({ updateWhenZooming: false, noWrap: true });
-                var size = u.getTileSize();
-                u.sources = [];
-                u.max_zoom = MaxZoom;
-                u.offset = Offset;
-                u.grid_x_size = Math.pow(2, MaxZoom);
-                u.grid_x_width = size.x / u.grid_x_size;
-                u.grid_y_size = Math.pow(2, MaxZoom);
-                u.grid_y_height = size.y / u.grid_y_size;
-                u.Offset = Offset;
+                var textGrid = new VectorGridPrototype({
+                    updateWhenZooming: false,
+                    noWrap: true
+                });
+                var tile_size = textGrid.getTileSize();
+                textGrid.sources = [];
+                textGrid.MaxZoom = MaxZoom;
+                textGrid.offset = Offset;
+                textGrid.grid_x_size = Math.pow(2, MaxZoom);
+                textGrid.grid_x_width = tile_size.x / textGrid.grid_x_size;
+                textGrid.grid_y_size = Math.pow(2, MaxZoom);
+                textGrid.grid_y_height = tile_size.y / textGrid.grid_y_size;
                 var canvas = L.DomUtil.create('canvas', 'leaflet-tile');
                 var ctx = canvas.getContext('2d');
-                u.Offset = Offset;
-                u.addText = (text, original_text, control, x, y, zoomMin, zoomMax, color, scale) => {
+                textGrid.addText = (text, original_text, control, x, y, MinZoom, MaxZoom, color, scale) => {
                     controlToFont(control, ctx);
-                    var size = ctx.measureText(original_text);
-                    u.sources.push(
+                    var text_size = ctx.measureText(original_text);
+                    textGrid.sources.push(
                         {
                             size: {
-                                width: (size.actualBoundingBoxRight - size.actualBoundingBoxLeft) / u.grid_x_size,
-                                height: (size.actualBoundingBoxAscent + size.actualBoundingBoxDescent) / u.grid_y_size
+                                width: (text_size.actualBoundingBoxRight - text_size.actualBoundingBoxLeft) / textGrid.grid_x_size,
+                                height: (text_size.actualBoundingBoxAscent + text_size.actualBoundingBoxDescent) / textGrid.grid_y_size
                             },
                             text: text,
                             original_text: original_text,
                             x: x + Offset[0],
                             y: -(y + Offset[1]) + 256,
                             control: control,
-                            zoomMin: zoomMin,
-                            zoomMax: zoomMax,
+                            MinZoom: MinZoom,
+                            MaxZoom: MaxZoom,
                             color: color,
                             scale: scale == null ? 1 : scale
                         });
                 };
+
                 const loaded_events = [];
                 const unloaded_events = [];
-                u.when = function (event_name, event_action) {
+                textGrid.when = function (event_name, event_action) {
                     switch (event_name) {
                         case 'loaded':
                             loaded_events.push(event_action);
@@ -154,9 +156,10 @@ define(['leaflet', 'intersects'],
                             break;
                     }
                 };
-                u.on('loading', () => { for (let i of unloaded_events) i(); });
-                u.on('load', () => { for (let i of loaded_events) i(); });
-                return u;
+
+                textGrid.on('loading', () => { for (let i of unloaded_events) i(); });
+                textGrid.on('load', () => { for (let i of loaded_events) i(); });
+                return textGrid;
             }
         }
     });

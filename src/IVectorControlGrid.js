@@ -7,22 +7,145 @@ define(['leaflet', 'intersects'],
             drawHexes: true,
             shadowSize: 20,
             disabledIcons: {},
-            zoomScale: function (zoom) { return .65 * (1 + this.max_zoom - zoom); },
+            zoomScale: function (zoom) {return .65 * (1 + this.maxZoom - zoom);},
             pixelScale: 1,
             build: "",
 
             createTile: function (coords, done) {
                 let scale = Math.pow(2, coords.z);
                 if (coords.x < 0 || coords.x >= scale || coords.y < 0 || coords.y >= scale || coords.z < 0) {
-                    let t = L.DomUtil.create('canvas', 'leaflet-tile');
+                    let tile = L.DomUtil.create('canvas', 'leaflet-tile');
                     let tile_size = this.getTileSize();
-                    t.width = this.pixelScale * tile_size.x;
-                    t.height = this.pixelScale * tile_size.y;
-                    setTimeout(() => done(null, t), 0);
-                    return t;
+                    tile.width = this.pixelScale * tile_size.x;
+                    tile.height = this.pixelScale * tile_size.y;
+                    setTimeout(() => done(null, tile), 0);
+                    return tile;
                 }
-                return this.renderer({ t: this, coords: coords, done: done }, 1);
+                return this.renderer({gridLayer: this, coords: coords, done: done}, 1);
             },
+
+            renderer: function (renderElements, phase) {
+                switch (phase) {
+                    case 1:
+                        {
+                            renderElements.tile = L.DomUtil.create('canvas', 'leaflet-tile');
+                            let size = renderElements.gridLayer.getTileSize();
+                            renderElements.tile.width = size.x * renderElements.gridLayer.pixelScale;
+                            renderElements.tile.height = size.y * renderElements.gridLayer.pixelScale;
+                            renderElements.tile.style.width = renderElements.tile.width.toString().concat('px');
+                            renderElements.tile.style.height = renderElements.tile.height.toString().concat('px');
+                            renderElements.ctx = renderElements.tile.getContext('2d');
+                            renderElements.gridLayer.loadIcons(renderElements);
+                            renderElements.img = new Image();
+                            var scale = Math.pow(2, Math.max(0, renderElements.coords.z - renderElements.gridLayer.max_native_zoom));
+                            renderElements.img.src = 'images/Tiles/'.concat(Math.min(renderElements.coords.z, renderElements.gridLayer.max_native_zoom)).concat('_').concat(Math.floor(renderElements.coords.x / scale)).concat('_').concat(Math.floor(renderElements.coords.y / scale)).concat('.webp');
+                            renderElements.phase_2_complete = false;
+                            renderElements.phase_3_complete = false;
+                            renderElements.img.onload = () => renderElements.gridLayer.yield(renderElements, 2);
+                            renderElements.gridLayer.yield(renderElements, 3);
+                            return renderElements.tile;
+                        }
+                    case 2:
+                        {
+                            scale = Math.pow(2, Math.max(0, renderElements.coords.z - renderElements.gridLayer.max_native_zoom));
+                            var ox = renderElements.coords.x % scale;
+                            var oy = renderElements.coords.y % scale;
+                            var bx = (renderElements.img.width / scale);
+                            var by = (renderElements.img.height / scale);
+                            renderElements.ctx.drawImage(renderElements.img, bx * ox, by * oy, bx, by, 0, 0, renderElements.tile.width, renderElements.tile.height);
+                            delete renderElements.img;
+                            renderElements.phase_2_complete = true;
+                            if (renderElements.phase_3_complete)
+                                renderElements.gridLayer.yield(renderElements, 4);
+                            break;
+                        }
+                    case 3:
+                        {
+                            renderElements.hd_ratio = (renderElements.coords.z < 2 ? 8 : 16);
+                            if (!renderElements.gridLayer.draw) {
+                                renderElements.phase_3_complete = true;
+                                if(renderElements.phase_2_complete)
+                                    renderElements.gridLayer.yield(renderElements, 4);
+                                return;
+                            }
+                            renderElements.temp_canvas = L.DomUtil.create('canvas', '');
+                            renderElements.temp_canvas.width = 2 + renderElements.tile.width / renderElements.gridLayer.pixelScale / renderElements.hd_ratio;
+                            renderElements.temp_canvas.height = 2 + renderElements.tile.height / renderElements.gridLayer.pixelScale / renderElements.hd_ratio;
+                            renderElements.temp_ctx = renderElements.temp_canvas.getContext('2d', { alpha: false });
+                            renderElements.x = 0;
+                            renderElements.y = 0;
+                            renderElements.i = 0;
+                            renderElements.d = renderElements.temp_ctx.getImageData(0, 0, renderElements.temp_canvas.width, renderElements.temp_canvas.height);
+
+                            renderElements.gridLayer.calculateControl(renderElements);
+                            break;
+                        }
+                    case 4:
+                        {
+                            if (renderElements.temp_canvas != null) {
+                                let overlay = document.createElement("canvas");
+                                overlay.width = renderElements.tile.width;
+                                overlay.height = renderElements.tile.height;
+
+                                let overlay_ctx = overlay.getContext('2d');
+
+                                overlay_ctx.save();
+                                renderElements.gridLayer.drawValidRegions(overlay, overlay_ctx, renderElements.coords, renderElements.gridLayer);
+                                overlay_ctx.restore();
+
+                                overlay_ctx.save();
+                                overlay_ctx.globalCompositeOperation = 'source-atop';
+                                overlay_ctx.imageSmoothingQuality = 'low';
+                                overlay_ctx.drawImage(renderElements.temp_canvas, 1, 1, renderElements.temp_canvas.width - 2, renderElements.temp_canvas.height - 2, 0, 0, renderElements.tile.width, renderElements.tile.height);
+                                overlay_ctx.restore();
+
+                                overlay_ctx.save();
+                                overlay_ctx.scale(renderElements.gridLayer.pixelScale, renderElements.gridLayer.pixelScale);
+                                renderElements.gridLayer.drawInvalidRegions(overlay, overlay_ctx, renderElements.coords, renderElements.gridLayer);
+                                overlay_ctx.restore();
+
+                                renderElements.ctx.save();
+                                renderElements.ctx.globalCompositeOperation = 'source-atop';
+                                renderElements.ctx.globalAlpha = .3;
+                                renderElements.ctx.drawImage(overlay, 0, 0);
+                                renderElements.ctx.restore();
+
+                                delete renderElements.temp_canvas;
+                            }
+                            renderElements.gridLayer.yield(renderElements, 5);
+                            break;
+                        }
+                    case 5:
+                        {
+                            renderElements.ctx.save();
+                            renderElements.ctx.scale(renderElements.gridLayer.pixelScale, renderElements.gridLayer.pixelScale);
+                            renderElements.gridLayer.drawRoads(renderElements);
+                            break;
+                        }
+                    case 6:
+                        {
+                            renderElements.ctx.restore();
+                            renderElements.gridLayer.drawBorders(renderElements);
+                            renderElements.gridLayer.yield(renderElements, 7);
+                            break;
+                        }
+                    case 7:
+                        {
+                            renderElements.ctx.save();
+                            renderElements.ctx.scale(renderElements.gridLayer.pixelScale, renderElements.gridLayer.pixelScale);
+                            renderElements.gridLayer.drawIcons(renderElements);
+                            break;
+                        }
+                    case 8:
+                        {
+                            renderElements.ctx.restore();
+                            setTimeout(() => renderElements.done(null, renderElements.tile), 0);
+                            break;
+                        }
+                }
+            },
+
+            yield: (renderElements, phase) => setTimeout(() => renderElements.gridLayer.renderer(renderElements, phase), 0),
 
             drawHex: (ctx, x, y, w, h, scale) => {
                 ctx.lineWidth = scale;
@@ -50,70 +173,70 @@ define(['leaflet', 'intersects'],
                 ctx.stroke();
             },
 
-            drawBorders: function (c) {
-                let coords = c.coords;
+            drawBorders: function (renderElements) {
+                let coords = renderElements.coords;
 
-                let tile = c.tile;
+                let tile = renderElements.tile;
 
-                if (!c.t.drawHexes)
+                if (!renderElements.gridLayer.drawHexes)
                     return tile;
 
                 var zoom = Math.pow(2, coords.z);
                 var lineWidth = .05 * Math.pow(2, coords.z);
-                var shadow = lineWidth * .5 / Math.pow(2, c.t.max_zoom);
+                var shadow = lineWidth * .5 / Math.pow(2, renderElements.gridLayer.maxZoom);
 
-                c.ctx.save();
-                c.ctx.strokeStyle = '#303030';
-                c.ctx.opacity = .8;
-                c.ctx.scale(c.t.pixelScale, c.t.pixelScale);
-                for (var source of c.t.hex_sources) {
+                renderElements.ctx.save();
+                renderElements.ctx.strokeStyle = '#303030';
+                renderElements.ctx.opacity = .8;
+                renderElements.ctx.scale(renderElements.gridLayer.pixelScale, renderElements.gridLayer.pixelScale);
+                for (var source of renderElements.gridLayer.hex_sources) {
                     var label_w = source.size.width * zoom + shadow * 2;
                     var label_h = source.size.height * zoom + shadow * 2;
-                    var label_x = source.x * zoom - coords.x * tile.width / c.t.pixelScale - label_w - shadow;
-                    var label_y = source.y * zoom - coords.y * tile.height / c.t.pixelScale - label_h - shadow;
+                    var label_x = source.x * zoom - coords.x * tile.width / renderElements.gridLayer.pixelScale - label_w - shadow;
+                    var label_y = source.y * zoom - coords.y * tile.height / renderElements.gridLayer.pixelScale - label_h - shadow;
 
                     if (intersects.boxBox(0, 0, tile.width, tile.height, label_x, label_y, label_w, label_h))
-                        c.t.drawHex(c.ctx, label_x + label_w * .5, label_y + label_h * .5, label_w * .5, label_h * .5, lineWidth);
+                        renderElements.gridLayer.drawHex(renderElements.ctx, label_x + label_w * .5, label_y + label_h * .5, label_w * .5, label_h * .5, lineWidth);
                 }
-                c.ctx.restore();
+                renderElements.ctx.restore();
             },
 
-            drawValidRegions: function (tile, ctx, coords, t) {
+            drawValidRegions: function (tile, ctx, coords, gridLayer) {
                 var zoom = Math.pow(2, coords.z);
                 var lineWidth = 1 * Math.pow(2, coords.z);
-                var shadow = lineWidth * .5 / Math.pow(2, t.max_zoom);
+                var shadow = lineWidth * .5 / Math.pow(2, gridLayer.maxZoom);
                 ctx.save();
                 ctx.fillStyle = '#FFFFFFFF';
                 ctx.strokeStyle = '#FFFFFFFF';
-                ctx.scale(t.pixelScale, t.pixelScale);
-                for (var source of t.hex_sources) {
+                ctx.scale(gridLayer.pixelScale, gridLayer.pixelScale);
+                for (var source of gridLayer.hex_sources) {
                     if (!source.offline) {
                         var label_w = source.size.width * zoom + shadow * 2;
                         var label_h = source.size.height * zoom + shadow * 2;
-                        var label_x = source.x * zoom - coords.x * tile.width / t.pixelScale - label_w - shadow;
-                        var label_y = source.y * zoom - coords.y * tile.height / t.pixelScale - label_h - shadow;
+                        var label_x = source.x * zoom - coords.x * tile.width / gridLayer.pixelScale - label_w - shadow;
+                        var label_y = source.y * zoom - coords.y * tile.height / gridLayer.pixelScale - label_h - shadow;
                         if (intersects.boxBox(0, 0, tile.width, tile.height, label_x, label_y, label_w, label_h))
-                            t.fillHex(ctx, label_x + label_w * .5, label_y + label_h * .5, label_w * .5, label_h * .5);
+                            gridLayer.fillHex(ctx, label_x + label_w * .5, label_y + label_h * .5, label_w * .5, label_h * .5);
                     }
                 }
                 ctx.restore();
             },
 
-            drawInvalidRegions: function (tile, ctx, coords, t) {
+            drawInvalidRegions: function (tile, ctx, coords, gridLayer) {
                 var zoom = Math.pow(2, coords.z);
                 var lineWidth = 1 * Math.pow(2, coords.z);
-                var shadow = lineWidth * .5 / Math.pow(2, t.max_zoom);
+                var shadow = lineWidth * .5 / Math.pow(2, gridLayer.maxZoom);
                 ctx.save();
                 ctx.fillStyle = '#000000FF';
                 ctx.strokeStyle = '#000000FF';
-                for (var source of t.hex_sources)
+                for (var source of gridLayer.hex_sources)
                     if (source.offline) {
                         var label_w = source.size.width * zoom + shadow * 2;
                         var label_h = source.size.height * zoom + shadow * 2;
-                        var label_x = source.x * zoom - coords.x * tile.width / t.pixelScale - label_w - shadow;// / t.pixelScale
-                        var label_y = source.y * zoom - coords.y * tile.height / t.pixelScale - label_h - shadow;
+                        var label_x = source.x * zoom - coords.x * tile.width / gridLayer.pixelScale - label_w - shadow;// / gridLayer.pixelScale
+                        var label_y = source.y * zoom - coords.y * tile.height / gridLayer.pixelScale - label_h - shadow;
                         if (intersects.boxBox(0, 0, tile.width, tile.height, label_x, label_y, label_w, label_h))
-                            t.fillHex(ctx, label_x + label_w * .5, label_y + label_h * .5, label_w * .5, label_h * .5);
+                            gridLayer.fillHex(ctx, label_x + label_w * .5, label_y + label_h * .5, label_w * .5, label_h * .5);
                     }
                 ctx.restore();
             },
@@ -128,28 +251,28 @@ define(['leaflet', 'intersects'],
                     delete this.disabledIcons[icon];
             },
 
-            loadIcons: function (c) {
-                var raw_scale = c.t.zoomScale(c.coords.z);
-                var zoom = Math.pow(2, c.coords.z);
-                var max = Math.pow(2, c.t.max_zoom);
-                c.pendingLoad = 0;
+            loadIcons: function (renderElements) {
+                var raw_scale = renderElements.gridLayer.zoomScale(renderElements.coords.z);
+                var zoom = Math.pow(2, renderElements.coords.z);
+                var max = Math.pow(2, renderElements.gridLayer.maxZoom);
+                renderElements.pendingLoad = 0;
                 const shadowSize = 20;
-                for (var source of c.t.icon_sources) {
-                    if (c.coords.z >= source.zoomMin && c.coords.z < source.zoomMax && source.icon != null && !(source.icon in c.t.disabledIcons)) {
+                for (var source of renderElements.gridLayer.icon_sources) {
+                    if (renderElements.coords.z >= source.zoomMin && renderElements.coords.z < source.zoomMax && source.icon != null && !(source.icon in renderElements.gridLayer.disabledIcons)) {
                         var scale = raw_scale;
                         let shadow = source.glow ? shadowSize * scale * zoom / max : 0;
                         var label_w = source.size.width * zoom * scale;
                         var label_h = source.size.height * zoom * scale;
-                        var label_x = source.x * zoom - c.coords.x * c.tile.width - label_w * .5;
-                        var label_y = source.y * zoom - c.coords.y * c.tile.height - label_h * .5;
-                        if (intersects.boxBox(0, 0, c.tile.width, c.tile.height, label_x - 2.0 * shadow, label_y - 2.0 * shadow, label_w + 4.0 * shadow, label_h + 4.0 * shadow)) {
-                            if (!(source.icon in c.t.imageCache)) {
-                                c.pendingLoad++;
+                        var label_x = source.x * zoom - renderElements.coords.x * renderElements.tile.width - label_w * .5;
+                        var label_y = source.y * zoom - renderElements.coords.y * renderElements.tile.height - label_h * .5;
+                        if (intersects.boxBox(0, 0, renderElements.tile.width, renderElements.tile.height, label_x - 2.0 * shadow, label_y - 2.0 * shadow, label_w + 4.0 * shadow, label_h + 4.0 * shadow)) {
+                            if (!(source.icon in renderElements.gridLayer.imageCache)) {
+                                renderElements.pendingLoad++;
                                 var img = { image: new Image() };
-                                c.t.imageCache[source.icon] = img;
+                                renderElements.gridLayer.imageCache[source.icon] = img;
                                 img.image.src = 'images/MapIcons/'.concat(source.icon);
                                 img.image.onload = function () {
-                                    --c.pendingLoad;
+                                    --renderElements.pendingLoad;
                                 };
                             }
                         }
@@ -157,7 +280,7 @@ define(['leaflet', 'intersects'],
                 }
             },
 
-            drawIcons: function (c) {
+            drawIcons: function (renderElements) {
                 function makeOnLoadCallback(icon, ControlGrid) {
                     return function () {
                         var callbacks = ControlGrid.imageCache[icon].callbacks;
@@ -177,79 +300,79 @@ define(['leaflet', 'intersects'],
                         else
                             ctx.drawImage(img.image, lx, ly, lw, lh);
                         if (--tile.pendingLoad == 0) {
-                            c.t.yield(c, 8);
+                            renderElements.gridLayer.yield(renderElements, 8);
                             delete img.callbacks;
                         }
                     };
                 }
 
-                var raw_scale = c.t.zoomScale(c.coords.z);
-                var zoom = Math.pow(2, c.coords.z);
-                var max = Math.pow(2, c.t.max_zoom);
+                var raw_scale = renderElements.gridLayer.zoomScale(renderElements.coords.z);
+                var zoom = Math.pow(2, renderElements.coords.z);
+                var max = Math.pow(2, renderElements.gridLayer.maxZoom);
 
-                c.tile.pendingLoad = 0;
+                renderElements.tile.pendingLoad = 0;
 
                 const shadowSize = 20;
 
-                for (var source of c.t.icon_sources) {
+                for (var source of renderElements.gridLayer.icon_sources) {
 
-                    if (c.coords.z >= source.zoomMin && c.coords.z < source.zoomMax && source.icon != null && !(source.icon in c.t.disabledIcons)) {
+                    if (renderElements.coords.z >= source.zoomMin && renderElements.coords.z < source.zoomMax && source.icon != null && !(source.icon in renderElements.gridLayer.disabledIcons)) {
 
                         var scale = raw_scale;
                         let shadow = source.glow ? shadowSize * scale * zoom / max : 0;
 
                         var label_w = source.size.width * zoom * scale;
                         var label_h = source.size.height * zoom * scale;
-                        var label_x = source.x * zoom - c.coords.x * c.tile.width / c.t.pixelScale - label_w * .5;
-                        var label_y = source.y * zoom - c.coords.y * c.tile.height / c.t.pixelScale - label_h * .5;
+                        var label_x = source.x * zoom - renderElements.coords.x * renderElements.tile.width / renderElements.gridLayer.pixelScale - label_w * .5;
+                        var label_y = source.y * zoom - renderElements.coords.y * renderElements.tile.height / renderElements.gridLayer.pixelScale - label_h * .5;
 
 
-                        if (intersects.boxBox(0, 0, c.tile.width / c.t.pixelScale, c.tile.height / c.t.pixelScale, label_x - 2.0 * shadow, label_y - 2.0 * shadow, label_w + 4.0 * shadow, label_h + 4.0 * shadow)) {
+                        if (intersects.boxBox(0, 0, renderElements.tile.width / renderElements.gridLayer.pixelScale, renderElements.tile.height / renderElements.gridLayer.pixelScale, label_x - 2.0 * shadow, label_y - 2.0 * shadow, label_w + 4.0 * shadow, label_h + 4.0 * shadow)) {
                             var icon = source.icon;
                             var lx = label_x, ly = label_y, lw = label_w, lh = label_h;
-                            if (icon in c.t.imageCache) {
-                                var img = c.t.imageCache[icon];
+                            if (icon in renderElements.gridLayer.imageCache) {
+                                var img = renderElements.gridLayer.imageCache[icon];
                                 if (img.image.complete) {
                                     if (source.glow) {
-                                        c.ctx.save();
-                                        c.ctx.filter = "brightness(0.5) sepia(1) hue-rotate(296deg) saturate(10000%) blur(".concat(shadow).concat("px)"); // blur(10px)
-                                        c.ctx.drawImage(img.image, lx, ly, lw, lh);
-                                        c.ctx.drawImage(img.image, lx, ly, lw, lh);
-                                        c.ctx.drawImage(img.image, lx, ly, lw, lh);
-                                        c.ctx.restore();
+                                        renderElements.ctx.save();
+                                        renderElements.ctx.filter = "brightness(0.5) sepia(1) hue-rotate(296deg) saturate(10000%) blur(".concat(shadow).concat("px)"); // blur(10px)
+                                        renderElements.ctx.drawImage(img.image, lx, ly, lw, lh);
+                                        renderElements.ctx.drawImage(img.image, lx, ly, lw, lh);
+                                        renderElements.ctx.drawImage(img.image, lx, ly, lw, lh);
+                                        renderElements.ctx.restore();
                                     }
                                     else
-                                        c.ctx.drawImage(img.image, lx, ly, lw, lh);
+                                        renderElements.ctx.drawImage(img.image, lx, ly, lw, lh);
                                 }
                                 else {
-                                    img.callbacks.push(makeRenderCallback(c.ctx, img, lx, ly, lw, lh, c.tile, source.glow, shadow));
-                                    c.tile.pendingLoad++;
+                                    img.callbacks.push(makeRenderCallback(renderElements.ctx, img, lx, ly, lw, lh, renderElements.tile, source.glow, shadow));
+                                    renderElements.tile.pendingLoad++;
                                 }
                             }
                             else {
-                                c.tile.pendingLoad++;
+                                renderElements.tile.pendingLoad++;
                                 img = { image: new Image() };
-                                img.callbacks = [makeRenderCallback(c.ctx, img, lx, ly, lw, lh, c.tile, source.glow, shadow)];
-                                c.t.imageCache[icon] = img;
+                                img.callbacks = [makeRenderCallback(renderElements.ctx, img, lx, ly, lw, lh, renderElements.tile, source.glow, shadow)];
+                                renderElements.gridLayer.imageCache[icon] = img;
                                 img.image.src = 'images/MapIcons/'.concat(source.icon);
-                                img.image.onload = makeOnLoadCallback(icon, c.t);
+                                img.image.onload = makeOnLoadCallback(icon, renderElements.t);
                             }
                         }
                     }
                 }
-                if (c.tile.pendingLoad == 0)
-                    c.t.yield(c, 8);
+                if (renderElements.tile.pendingLoad == 0)
+                    renderElements.gridLayer.yield(renderElements, 8);
             },
 
-            drawRoads: function (c) {
-                var coords = c.coords;
-                let tile = c.tile;
-                let ctx = c.ctx;
+            drawRoads: function (renderElements) {
+                var coords = renderElements.coords;
+                let tile = renderElements.tile;
+                let ctx = renderElements.ctx;
 
                 ctx.lineJoin = 'miter';
                 ctx.lineCap = 'round';
 
-                var scale = Math.pow(2, c.t.grid_depth - coords.z);
+                var scale = Math.pow(2, renderElements.gridLayer.grid_depth - coords.z);
                 var start_x = Math.floor(coords.x * scale);
                 var start_y = Math.floor(coords.y * scale);
 
@@ -257,15 +380,15 @@ define(['leaflet', 'intersects'],
                 var end_y = Math.ceil((coords.y + 1) * scale);
 
                 var depth_inverse = Math.pow(2, coords.z);
-                var sources = c.t.road_sources;
-                var offset = c.t.offset;
-                var outerWidth = c.t.RoadWidth * depth_inverse;
-                var innerWidth = c.t.ControlWidth * depth_inverse;
-                var grid_x_size = c.t.grid_x_size;
-                var grid_y_size = c.t.grid_y_size;
-                var controls = c.t.controls;
-                var quality = c.t.quality;
-                let pixelScale = c.t.pixelScale;
+                var sources = renderElements.gridLayer.road_sources;
+                var offset = renderElements.gridLayer.offset;
+                var outerWidth = renderElements.gridLayer.RoadWidth * depth_inverse;
+                var innerWidth = renderElements.gridLayer.ControlWidth * depth_inverse;
+                var grid_x_size = renderElements.gridLayer.grid_x_size;
+                var grid_y_size = renderElements.gridLayer.grid_y_size;
+                var controls = renderElements.gridLayer.controls;
+                var quality = renderElements.gridLayer.quality;
+                let pixelScale = renderElements.gridLayer.pixelScale;
                 function draw(i, start_x, start_y, end_x, end_y, x, y, step) {
                     var startTime = Date.now();
                     if (step == 1) {
@@ -343,182 +466,58 @@ define(['leaflet', 'intersects'],
                                     }
 
                                 }
-                        c.t.yield(c, 6);
+                        renderElements.gridLayer.yield(renderElements, 6);
                         return;
                     }
                 }
                 draw(0, start_x, start_y, end_x, end_y, start_x, start_y, 1);
             },
 
-            renderer: function (c, phase) {
-                switch (phase) {
-                    case 1:
-                        {
-                            c.tile = L.DomUtil.create('canvas', 'leaflet-tile');
-                            let size = c.t.getTileSize();
-                            c.tile.width = size.x * c.t.pixelScale;
-                            c.tile.height = size.y * c.t.pixelScale;
-                            c.tile.style.width = c.tile.width.toString().concat('px');
-                            c.tile.style.height = c.tile.height.toString().concat('px');
-                            c.ctx = c.tile.getContext('2d');
-                            c.t.loadIcons(c);
-                            c.img = new Image();
-                            var scale = Math.pow(2, Math.max(0, c.coords.z - c.t.max_native_zoom));
-                            c.img.src = 'images/Tiles/'.concat(Math.min(c.coords.z, c.t.max_native_zoom)).concat('_').concat(Math.floor(c.coords.x / scale)).concat('_').concat(Math.floor(c.coords.y / scale)).concat('.webp');
-                            c.phase_2_complete = false;
-                            c.phase_3_complete = false;
-                            c.img.onload = () => c.t.yield(c, 2);
-                            c.t.yield(c, 3);
-                            return c.tile;
-                        }
-                    case 2:
-                        {
-                            scale = Math.pow(2, Math.max(0, c.coords.z - c.t.max_native_zoom));
-                            var ox = c.coords.x % scale;
-                            var oy = c.coords.y % scale;
-                            var bx = (c.img.width / scale);
-                            var by = (c.img.height / scale);
-                            c.ctx.drawImage(c.img, bx * ox, by * oy, bx, by, 0, 0, c.tile.width, c.tile.height);
-                            delete c.img;
-                            c.phase_2_complete = true;
-                            if (c.phase_3_complete)
-                                c.t.yield(c, 4);
-                            break;
-                        }
-                    case 3:
-                        {
-                            c.hd_ratio = (c.coords.z < 2 ? 8 : 16);
-                            if (!c.t.draw) {
-                                c.phase_3_complete = true;
-                                if(c.phase_2_complete)
-                                    c.t.yield(c, 4);
-                                return;
-                            }
-                            c.temp_canvas = L.DomUtil.create('canvas', '');
-                            c.temp_canvas.width = 2 + c.tile.width / c.t.pixelScale / c.hd_ratio;
-                            c.temp_canvas.height = 2 + c.tile.height / c.t.pixelScale / c.hd_ratio;
-                            c.temp_ctx = c.temp_canvas.getContext('2d', { alpha: false });
-                            c.x = 0;
-                            c.y = 0;
-                            c.i = 0;
-                            c.d = c.temp_ctx.getImageData(0, 0, c.temp_canvas.width, c.temp_canvas.height);
-
-                            c.t.calculateControl(c);
-                            break;
-                        }
-                    case 4:
-                        {
-                            if (c.temp_canvas != null) {
-                                let overlay = document.createElement("canvas");
-                                overlay.width = c.tile.width;
-                                overlay.height = c.tile.height;
-
-                                let overlay_ctx = overlay.getContext('2d');
-
-                                overlay_ctx.save();
-                                c.t.drawValidRegions(overlay, overlay_ctx, c.coords, c.t);
-                                overlay_ctx.restore();
-
-                                overlay_ctx.save();
-                                overlay_ctx.globalCompositeOperation = 'source-atop';
-                                overlay_ctx.imageSmoothingQuality = 'low';
-                                overlay_ctx.drawImage(c.temp_canvas, 1, 1, c.temp_canvas.width - 2, c.temp_canvas.height - 2, 0, 0, c.tile.width, c.tile.height);
-                                overlay_ctx.restore();
-
-                                overlay_ctx.save();
-                                overlay_ctx.scale(c.t.pixelScale, c.t.pixelScale);
-                                c.t.drawInvalidRegions(overlay, overlay_ctx, c.coords, c.t);
-                                overlay_ctx.restore();
-
-                                c.ctx.save();
-                                c.ctx.globalCompositeOperation = 'source-atop';
-                                c.ctx.globalAlpha = .3;
-                                c.ctx.drawImage(overlay, 0, 0);
-                                c.ctx.restore();
-
-                                delete c.temp_canvas;
-                            }
-                            c.t.yield(c, 5);
-                            break;
-                        }
-                    case 5:
-                        {
-                            c.ctx.save();
-                            c.ctx.scale(c.t.pixelScale, c.t.pixelScale);
-                            c.t.drawRoads(c);
-                            break;
-                        }
-                    case 6:
-                        {
-                            c.ctx.restore();
-                            c.t.drawBorders(c);
-                            c.t.yield(c, 7);
-                            break;
-                        }
-                    case 7:
-                        {
-                            c.ctx.save();
-                            c.ctx.scale(c.t.pixelScale, c.t.pixelScale);
-                            c.t.drawIcons(c);
-                            break;
-                        }
-                    case 8:
-                        {
-                            c.ctx.restore();
-                            setTimeout(() => c.done(null, c.tile), 0);
-                            break;
-                        }
-                }
-            },
-
-            calculateControl: function (c) {
+            calculateControl: function (renderElements) {
 
                 var start = Date.now();
-                var max = Math.pow(2, c.t.max_zoom - c.coords.z);
-                var zoom = Math.pow(2, c.coords.z);
-                var hdrz = c.hd_ratio / zoom;
-                var grid = { x: c.coords.x * max, y: c.coords.y * max };
+                var max = Math.pow(2, renderElements.gridLayer.maxZoom - renderElements.coords.z);
+                var zoom = Math.pow(2, renderElements.coords.z);
+                var hdrz = renderElements.hd_ratio / zoom;
+                var grid = { x: renderElements.coords.x * max, y: renderElements.coords.y * max };
                 var colors = [{ r: 0.1372549019607843, g: 0.3372549019607843, b: 0.5137254901960784 }, { r: 0.3176470588235294, g: 0.4235294117647059, b: 0.2941176470588235 }];
 
-                for (var counter = 0; c.y < c.temp_canvas.height; c.y++, c.x = 0)
-                    for (; c.x < c.temp_canvas.width; c.x++, counter++) {
+                for (var counter = 0; renderElements.y < renderElements.temp_canvas.height; renderElements.y++, renderElements.x = 0)
+                    for (; renderElements.x < renderElements.temp_canvas.width; renderElements.x++, counter++) {
                         if (counter > 16 && Date.now() - start > 3) {
-                            setTimeout(() => c.t.calculateControl(c), 0);
+                            setTimeout(() => renderElements.gridLayer.calculateControl(renderElements), 0);
                             return;
                         }
 
-                        var scale = { x: grid.x + (c.x - 1) * hdrz, y: -(grid.y + (c.y - 1) * hdrz) }
-                        var v = c.t.API.control(scale.x, scale.y);
+                        var scale = { x: grid.x + (renderElements.x - 1) * hdrz, y: -(grid.y + (renderElements.y - 1) * hdrz) }
+                        var v = renderElements.gridLayer.API.control(scale.x, scale.y);
 
                         if (v < 0) // fade from warden
                         {
                             v++;
-                            c.d.data[c.i++] = Math.floor(255 * (v * (.5 - colors[0].r) + colors[0].r));
-                            c.d.data[c.i++] = Math.floor(255 * (v * (.5 - colors[0].g) + colors[0].g));
-                            c.d.data[c.i] = Math.floor(255 * (v * (.5 - colors[0].b) + colors[0].b));
-                            c.i += 2;
+                            renderElements.d.data[renderElements.i++] = Math.floor(255 * (v * (.5 - colors[0].r) + colors[0].r));
+                            renderElements.d.data[renderElements.i++] = Math.floor(255 * (v * (.5 - colors[0].g) + colors[0].g));
+                            renderElements.d.data[renderElements.i] = Math.floor(255 * (v * (.5 - colors[0].b) + colors[0].b));
+                            renderElements.i += 2;
                         }
                         else if (v > 0) // fade from colonial
                         {
                             v = 1 - v;
-                            c.d.data[c.i++] = Math.floor(255 * (v * (.5 - colors[1].r) + colors[1].r));
-                            c.d.data[c.i++] = Math.floor(255 * (v * (.5 - colors[1].g) + colors[1].g));
-                            c.d.data[c.i] = Math.floor(255 * (v * (.5 - colors[1].b) + colors[1].b));
-                            c.i += 2;
+                            renderElements.d.data[renderElements.i++] = Math.floor(255 * (v * (.5 - colors[1].r) + colors[1].r));
+                            renderElements.d.data[renderElements.i++] = Math.floor(255 * (v * (.5 - colors[1].g) + colors[1].g));
+                            renderElements.d.data[renderElements.i] = Math.floor(255 * (v * (.5 - colors[1].b) + colors[1].b));
+                            renderElements.i += 2;
                         }
                     }
 
-                c.temp_ctx.putImageData(c.d, 0, 0);
-                delete c.d;
+                renderElements.temp_ctx.putImageData(renderElements.d, 0, 0);
+                delete renderElements.d;
 
-                c.phase_3_complete = true;
-                if (c.phase_2_complete) {
-                    c.t.yield(c, 4);
+                renderElements.phase_3_complete = true;
+                if (renderElements.phase_2_complete) {
+                    renderElements.gridLayer.yield(renderElements, 4);
                 }
-            },
-
-            yield: (c, phase) =>
-                setTimeout(() => c.t.renderer(c, phase), 0)
+            }
 
         });
 
@@ -536,7 +535,7 @@ define(['leaflet', 'intersects'],
 
                 ControlGrid.RoadWidth = RoadWidth;
                 ControlGrid.ControlWidth = ControlWidth;
-                ControlGrid.max_zoom = MaxZoom;
+                ControlGrid.maxZoom = MaxZoom;
                 ControlGrid.grid_depth = GridDepth;
                 ControlGrid.offset = Offset;
                 var max = Math.pow(2, GridDepth);
@@ -545,8 +544,6 @@ define(['leaflet', 'intersects'],
                 ControlGrid.grid_y_size = max;
                 ControlGrid.grid_y_height = (tile_size.y / ControlGrid.grid_y_size);
                 ControlGrid.max_native_zoom = MaxNativeZoom;
-                ControlGrid.offset = Offset;
-                ControlGrid.Offset = Offset;
                 ControlGrid.API = API;
                 ControlGrid.icon_grid_x_size = Math.pow(2, MaxZoom);
                 ControlGrid.icon_grid_x_width = ControlGrid.pixelScale * tile_size.x / ControlGrid.grid_x_size;

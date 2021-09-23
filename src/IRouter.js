@@ -2,7 +2,6 @@
     function (L, Paths, PathFinder, routing_machine, towns) {
         return {
             FoxholeRouter: function (mymap, API) {
-                var renderer = L.canvas({tolerance: .2}).addTo(mymap);
                 var JSONRoads = L.geoJSON(Paths);
 
                 var MainRoutes = {crs: Paths.crs, features: [], type: "FeatureCollection", filter: Paths.filter};
@@ -283,7 +282,7 @@
                     ColonialRoads: L.layerGroup().addTo(mymap),
                     NeutralRoads: L.layerGroup().addTo(mymap),
 
-                    renderer: renderer,
+                    renderer: L.canvas({tolerance: .2}).addTo(mymap),
 
                     WardenNetworkLayer: L.layerGroup().addTo(mymap),
                     ColonialNetworkLayer: L.layerGroup().addTo(mymap),
