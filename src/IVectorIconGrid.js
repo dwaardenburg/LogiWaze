@@ -59,7 +59,7 @@ define(['leaflet', 'intersects'],
                                 img = {image: new Image()};
                                 img.callbacks = [makeRenderCallback(ctx, img, lx, ly, lw, lh, done, tile, source.glow, shadow)];
                                 this.imageCache[icon] = img;
-                                img.image.src = '../images/MapIcons/'.concat(source.icon);
+                                img.image.src = 'images/MapIcons/'.concat(source.icon);
                                 img.image.onload = makeOnLoadCallback(icon, this);
                             }
                         }
