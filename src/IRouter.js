@@ -257,10 +257,12 @@
                 ControlLayer.addTo(mymap);
                 IconLayer.addTo(mymap);
                 RegionLabels.addTo(mymap);
+                // L.control.scale().addTo(mymap);
 
                 var FoxholeRouter = {
                     renderer: L.canvas({tolerance: .2}).addTo(mymap),
-                    summaryTemplate: '<table class="route-summary"><tr class="route-summary-header"><td><img src=\'images/{name}.webp\' /><span>{name}</span><span style=\'font-weight: bold; margin-left: 1em\' class=\'summary-routeinfo\'>{distance}</span>',
+                    summaryTemplate: '<table class="route-summary"><tr class="route-summary-header"><td><img src=\'images/{name}.webp\' /><span>{name}</span><span style=\'font-weight: bold; margin-left: 1em\' class=\'summary-routeinfo\'>{distance}</span>'
+                        .concat('</td></tr>').concat('<tr class="detailed-routeinfo"><td colspan="2"><span class="slow"></span><span class="slidecontainer"><input type="range" min="d /1" max="100" value="50" class="slider" oninput="updateSlider(this)"></span><span class="fast"></span></td></tr>').concat('<tr><td class="no-click">{time}</td></tr></table>'),
                     API: API,
                     Roads: JSONRoads,
 

@@ -122,7 +122,6 @@ define(['leaflet', 'intersects'],
                 IconGrid.grid_x_width = size.x / IconGrid.grid_x_size;
                 IconGrid.grid_y_size = Math.pow(2, MaxZoom);
                 IconGrid.grid_y_height = size.y / IconGrid.grid_y_size;
-                IconGrid.Offset = Offset;
                 IconGrid.imageCache = {};
                 IconGrid.addIcon = (icon, x, y, glow, zoomMin, zoomMax) => {
                     IconGrid.sources.push(
