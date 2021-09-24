@@ -15,7 +15,7 @@
                 var GridDepth = 6;
 
                 var RegionLabels = VectorTextGrid.Create(8, [128, 128]);
-                var IconLayer = VectorIconGrid.Create(5, 8, [128, 128]);
+                var IconLayer = VectorIconGrid.Create(8, [128, 128]);
                 var ControlLayer = VectorControlGrid.Create(5, 8, [128, 128], API, .30, .17, GridDepth);
                 var hex_height = 256 / 7;
                 var hex_width = hex_height * 2 / Math.sqrt(3);
@@ -259,6 +259,7 @@
                 RegionLabels.addTo(mymap);
 
                 var FoxholeRouter = {
+                    renderer: L.canvas({tolerance: .2}).addTo(mymap),
                     summaryTemplate: '<table class="route-summary"><tr class="route-summary-header"><td><img src=\'images/{name}.webp\' /><span>{name}</span><span style=\'font-weight: bold; margin-left: 1em\' class=\'summary-routeinfo\'>{distance}</span>',
                     API: API,
                     Roads: JSONRoads,
@@ -275,8 +276,6 @@
                     RegionLabels: RegionLabels,
                     Labels: L.layerGroup().addTo(mymap),
                     Borders: L.layerGroup().addTo(mymap),
-                    
-                    renderer: L.canvas({tolerance: .2}).addTo(mymap),
 
                     WardenNetworkLayer: L.layerGroup().addTo(mymap),
                     ColonialNetworkLayer: L.layerGroup().addTo(mymap),

@@ -10,7 +10,7 @@ define(['leaflet', 'intersects'],
                     ctx.font = '70px Renner';
                     break;
                 case 4:
-                    ctx.font = '120px Renner';
+                    ctx.font = '90px Renner';
                     break;
             }
         }

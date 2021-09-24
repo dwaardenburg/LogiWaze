@@ -5,7 +5,6 @@ define(['leaflet', 'intersects'],
             quality: true,
             draw: true,
             drawHexes: true,
-            shadowSize: 20,
             zoomScale: function (zoom) {return .65 * (1 + this.maxZoom - zoom);},
             pixelScale: 1,
             build: "",
@@ -74,7 +73,6 @@ define(['leaflet', 'intersects'],
                             renderElements.y = 0;
                             renderElements.i = 0;
                             renderElements.d = renderElements.temp_ctx.getImageData(0, 0, renderElements.temp_canvas.width, renderElements.temp_canvas.height);
-
                             renderElements.gridLayer.calculateControl(renderElements);
                             break;
                         }
@@ -342,7 +340,6 @@ define(['leaflet', 'intersects'],
             },
 
             calculateControl: function (renderElements) {
-
                 var start = Date.now();
                 var max = Math.pow(2, renderElements.gridLayer.maxZoom - renderElements.coords.z);
                 var zoom = Math.pow(2, renderElements.coords.z);

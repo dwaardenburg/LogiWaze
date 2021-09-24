@@ -8,7 +8,7 @@ global.VectorControlGrid = {
 };
 
 global.VectorIconGrid = {
-    Create: (MaxNativeZoom, MaxZoom, Offset) => require('./IVectorIconGrid.js').Create(MaxNativeZoom, MaxZoom, Offset)
+    Create: (MaxZoom, Offset) => require('./IVectorIconGrid.js').Create(MaxZoom, Offset)
 };
 
 global.VectorTextGrid = {
