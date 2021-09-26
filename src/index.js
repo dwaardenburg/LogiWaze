@@ -4,31 +4,23 @@ global.L = require('leaflet');
 global.$ = require('jquery');
 
 global.VectorControlGrid = {
-    Create: (MaxNativeZoom, MaxZoom, Offset, API, RoadWidth, ControlWidth, GridDepth) => require('./IVectorControlGrid.js').Create(MaxNativeZoom, MaxZoom, Offset, API, RoadWidth, ControlWidth, GridDepth)
-};
-
-global.VectorIconGrid = {
-    Create: (MaxZoom, Offset) => require('./IVectorIconGrid.js').Create(MaxZoom, Offset)
-};
-
-global.VectorTextGrid = {
-    Create: (MaxZoom, Offset) => require('./IVectorTextGrid.js').Create(MaxZoom, Offset)
+    Create: (MaxNativeZoom, MaxZoom, Offset, API, RoadWidth, ControlWidth, GridDepth) => require('./map.js').Create(MaxNativeZoom, MaxZoom, Offset, API, RoadWidth, ControlWidth, GridDepth)
 };
 
 global.FoxholeRouter = {
-    Create: (mymap, API) => new require('./IRouter.js').FoxholeRouter(mymap, API)
+    Create: (mymap, API) => new require('./router.js').FoxholeRouter(mymap, API)
 };
 
 global.API = {
-    Create: () => require('./API.js').API
+    Create: () => require('./api.js').API
 };
 
 global.FoxholeGeocoder = {
-    Create: (API) => require('./IGeocoder.js').FoxholeGeocoder(API)
+    Create: (API) => require('./geocoder.js').FoxholeGeocoder(API)
 };
 
 global.Panel = {
-    Create: (APIManager, Router, Geocoder) => require('./Panel.js').Panel(APIManager, Router, Geocoder)
+    Create: (APIManager, Router, Geocoder) => require('./panel.js').Panel(APIManager, Router, Geocoder)
 }
 
 var build="0af90a721677e20e7aa984dffdf91b353804d617";
@@ -471,12 +463,6 @@ APIManager.update(function () {
     mymap.on('overlayadd', function (event) {
         if (no_update) return;
         switch (event.name.replace(/<.*> */, '')) {
-            case "Town Halls":
-                Router.showTownHalls();
-                break;
-            case "Safehouses":
-                Router.showSafehouses();
-                break;
             case "Control":
                 Router.showControl();
                 break;
@@ -485,12 +471,6 @@ APIManager.update(function () {
                 break;
             case "Road Control":
                 Router.showRoadControl();
-                break;
-            case "Industry":
-                Router.showIndustry();
-                break;
-            case "Resources":
-                Router.showResources();
                 break;
             case "Labels":
                 Router.showLabels();
@@ -506,12 +486,6 @@ APIManager.update(function () {
     mymap.on('overlayremove', function (event) {
         if (no_update) return;
         switch (event.name.replace(/<.*> */, '')) {
-            case "Town Halls":
-                Router.hideTownHalls();
-                break;
-            case "Safehouses":
-                Router.hideSafehouses();
-                break;
             case "Control":
                 Router.hideControl();
                 break;
@@ -520,15 +494,6 @@ APIManager.update(function () {
                 break;
             case "Road Control":
                 Router.hideRoadControl();
-                break;
-            case "Industry":
-                Router.hideIndustry();
-                break;
-            case "Resources":
-                Router.hideResources();
-                break;
-            case "Labels":
-                Router.hideLabels();
                 break;
             case "Borders":
                 Router.hideBorders();
@@ -609,11 +574,9 @@ APIManager.update(function () {
         if (false == active_layers[keys[i]])
             switch (keys[i].replace(/<.*> */, '')) {
                 case "Town Halls":
-                    Router.hideTownHalls();
                     Router.TownHalls.remove();
                     break;
                 case "Safehouses":
-                    Router.hideSafehouses();
                     Router.Safehouses.remove();
                     break;
                 case "Control":
@@ -630,15 +593,12 @@ APIManager.update(function () {
                     break;
                 case "Industry":
                     Router.Industry.remove();
-                    Router.hideIndustry();
                     break;
                 case "Resources":
                     Router.Resources.remove();
-                    Router.hideResources();
                     break;
                 case "Labels":
                     Router.Labels.remove();
-                    Router.hideLabels();
                     break;
                 case "Borders":
                     Router.Borders.remove();
@@ -659,8 +619,10 @@ APIManager.update(function () {
         AutoZoom = true;
         SmartAutoZoom();
     });
-
-    document.getElementById("map-frame").style.opacity = '1';
-    document.getElementById("loader-holder").style.opacity = '0';
-    setTimeout(function () { document.getElementById("loader-holder").style.display = 'none'; }, 1000);
+    
+    Router.VectorControlGrid.on('load', function () {
+        document.getElementById("map-frame").style.opacity = '1';
+        document.getElementById("loader-holder").style.opacity = '0';
+        setTimeout(function () { document.getElementById("loader-holder").style.display = 'none'; }, 1000);
+    });
 }, shard);

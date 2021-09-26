@@ -375,22 +375,6 @@ button.leaflet-routing-add-waypoint {
     font-style: normal;
 }
 
-.town-neutral {
-    text-transform: uppercase;
-    font-family: Italic;
-}
-
-.town-warden {
-    text-transform: uppercase;
-    font-family: Celtic;
-}
-
-.town-colonial {
-    text-transform: uppercase;
-    font-family: Roman;
-    letter-spacing: .1em;
-}
-
 .turn-right {
     fill: blue;
     width: 24px;
@@ -433,13 +417,6 @@ button.leaflet-routing-add-waypoint {
     background-image: url(../images/continue.svg);
 }
 
-.compass {
-    fill: #444857;
-    width: 24px;
-    height: 24px;
-    background-image: url(../images/compass.svg);
-}
-
 .layer-icon {
     max-width: 16px;
     max-height: 16px;
@@ -458,31 +435,6 @@ button.leaflet-routing-add-waypoint {
     border: 2px solid transparent;
     font-size: 18px;
     margin: 0 4px;
-}
-
-.play-button {
-    display: inline-block;
-    transition: all .5s ease;
-}
-
-.play-button .triangle {
-    transition: all .7s ease-in-out;
-    stroke-dasharray: 240;
-    stroke-dashoffset: 480;
-    stroke: #FFFFFF;
-    transform: translateY(0);
-}
-
-.play-button svg {
-    width: 22px;
-    height: 22px;
-}
-
-.play-button:hover .triangle {
-    stroke-dashoffset: 0;
-    opacity: 1;
-    stroke: #FFFFFF;
-    animation: none nudge .7s ease-in-out;
 }
 
 .route-summary-header {
@@ -656,36 +608,44 @@ html {
     }
 }
 
-.region-name {
+.region-label {
     color: white;
     text-shadow: 0 0 4px #000,0px 0 4px #000,0px 0 4px #000,0px 0 4px #000;
     white-space: nowrap;
-    font-family: Italic;
-    font-size: 18px;
-    text-transform: uppercase;
+    font-size: 14px;
+    pointer-events: none;
 }
 
-    .region-name span {
-        position: relative;
-        left: -50%;
-        top: -.75em;
+    .region-label span {
+        text-align: center;
+        display: flex;
+        justify-content: center;
+        margin: -0.4em auto;
+        pointer-events: none;
+        /* top: -.75em; */
     }
 
 .town-label span {
     color: white;
     text-shadow: 0 0 4px #000,0px 0 4px #000,0px 0 4px #000,0px 0 4px #000;
     white-space: nowrap;
-    position: relative;
-    left: -50%;
-    top: -.75em;
+    text-align: center;
+    display: flex;
+    justify-content: center;
+    pointer-events: none;
+    /* left: -300%; */
+    /* top: -.75em; */
 }
 
 .minor-town-label span {
     color: #DDDDDD;
     text-shadow: 0 0 4px #000,0px 0 4px #000,0px 0 4px #000,0px 0 4px #000;
     white-space: nowrap;
-    position: relative;
-    left: -100%;
+    text-align: center;
+    display: flex;
+    justify-content: center;
+    pointer-events: none;
+    /* left: -100%; */
 }
 
 @media only all and ( max-aspect-ratio: 3/4 ), only all and (max-width: 700px) {

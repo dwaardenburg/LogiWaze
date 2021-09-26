@@ -64,8 +64,8 @@ exports.API = {
     regions: regions,
     mapControl: {},
     resources: {},
-    townHallIcons : [35, 5, 6, 7, 8, 9, 10, 45, 46, 47, 29, 17, 34, 51, 39, 52, 33, 18, 19, 56, 57, 58],
-    krigingControlPointIcons: [5, 6, 7, 8, 9, 10, 45, 46, 47, 29, 56, 57, 58],
+    townHallIcons : [5, 6, 7, 8, 9, 10, 11, 12, 17, 18, 19, 27, 28, 29, 33, 34, 35, 37, 39, 45, 46, 47, 51, 52, 53, 56, 57, 58],
+    krigingControlPointIcons: [5, 6, 7, 8, 9, 10, 29, 45, 46, 47, 56, 57, 58],
 
     mapRegionName: function (x) {
         return regionNameMap[x];

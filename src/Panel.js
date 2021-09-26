@@ -1,4 +1,4 @@
-define(['leaflet', './Itinerary.js', 'jquery'], function (L, Itinerary, $) {
+define(['leaflet', './itinerary.js', 'jquery'], function (L, Itinerary, $) {
 
     class custom_time_formatter extends L.Routing.Formatter {
         constructor(FHR) {
