@@ -329,7 +329,6 @@
                 }
 
                 ControlLayer.addTo(mymap);
-                mymap.markerZoomAnimation = false;
 
                 var FoxholeRouter = {
                     renderer: L.canvas({tolerance: .2}).addTo(mymap),
@@ -775,10 +774,6 @@
                         ControlLayer.redraw();
                     }
                 };
-
-                function Recase(x) {
-                    return x.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase();
-                }
 
                 return FoxholeRouter;
             }

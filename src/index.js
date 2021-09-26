@@ -35,11 +35,13 @@ var mymap = L.map('mapid',
         continuousWorld: true,
         bounds: L.latLngBounds(L.latLng(-256, 0), L.latLng(0, 256)),
         autoPan: false,
-        maxBounds: L.latLngBounds(L.latLng(-384, -256), L.latLng(128, 512)),
-        maxZoom: 8
+        maxBounds: L.latLngBounds(L.latLng(-170 - 128, -230 + 128), L.latLng(170 - 128, 230 + 128)), 
+        maxBoundsViscosity: 1,
+        maxZoom: 8,
+        minZoom: 1.5
     });
 
-L.imageOverlay("images/Background.webp", [[-170 - 128, -230 + 128], [170 - 128, 230 + 128]], { pane: 'imagebg', opacity: 0.4 }).addTo(mymap);
+L.imageOverlay("images/Background.webp", [[-170 - 128, -230 + 128], [170 - 128, 230 + 128]], {pane: 'imagebg', opacity: 0.4}).addTo(mymap);
 
 mymap.createPane('imagebg');
 mymap.getPane('imagebg').style.zIndex = 50;
@@ -432,29 +434,33 @@ APIManager.update(function () {
         }, 400);
     });
 
+    var viewZoomed = 0
     mymap.doubleClickZoom.disable()
     mymap.on("dblclick", function (event) {
         var Region = APIManager.calculateRegion(event.latlng.lng, event.latlng.lat)
         if (Region != null) {
-            var h = 256 / 14;
+            var h = 256 / 7;
             var w = h * 2 / Math.sqrt(3);
-            mymap.fitBounds(
-                [
-                    [
-                        APIManager.remapXY(Region).y - h - 128,
-                        APIManager.remapXY(Region).x + w + 128
-                    ],
-                    [
-                        APIManager.remapXY(Region).y + h - 128,
-                        APIManager.remapXY(Region).x - w + 128
-                    ]
-                ],
-                {
-                    paddingBottomRight: [
-                        getPanelVisibleWidth(),
-                        getPanelVisibleHeight()
-                    ]
-                });
+            var error = 2
+            var northEast = [APIManager.remapXY(Region).y + h / 2 - 128, APIManager.remapXY(Region).x + w / 2 + 128]
+            var southWest = [APIManager.remapXY(Region).y - h / 2 - 128, APIManager.remapXY(Region).x - w / 2 + 128]
+            var viewMidLat = (northEast[0] + southWest[0]) / 2
+            var viewMidLng = (northEast[1] + southWest[1]) / 2
+
+            var mapMidLat = (mymap.getBounds()._northEast.lat + mymap.getBounds()._southWest.lat) / 2
+            var mapMidLng = (mymap.getBounds()._northEast.lng + mymap.getBounds()._southWest.lng) / 2
+
+            if (    (viewMidLat - error) < mapMidLat && mapMidLat < (viewMidLat + error)
+                &&  (viewMidLng - error) < mapMidLng && mapMidLng < (viewMidLng + error)
+                &&  viewZoomed == mymap.getZoom()
+            ) {
+                northEast = [0, 256]
+                southWest = [- 256, 0]
+                mymap.fitBounds([northEast, southWest]);
+            } else {
+                mymap.fitBounds([northEast, southWest]);
+                setTimeout(function (){viewZoomed = mymap.getZoom()}, 1000);
+            }
         }
         clearTimeout(mm.timer);
         mm.prevent_double_click = true;
