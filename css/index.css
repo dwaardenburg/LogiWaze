@@ -622,7 +622,6 @@ html {
         justify-content: center;
         margin: -0.4em auto;
         pointer-events: none;
-        /* top: -.75em; */
     }
 
 .town-label span {
@@ -633,8 +632,6 @@ html {
     display: flex;
     justify-content: center;
     pointer-events: none;
-    /* left: -300%; */
-    /* top: -.75em; */
 }
 
 .minor-town-label span {
@@ -645,7 +642,16 @@ html {
     display: flex;
     justify-content: center;
     pointer-events: none;
-    /* left: -100%; */
+}
+
+.credit-label span {
+    color: #DAA520;
+    text-shadow: 0 0 4px #000,0px 0 4px #000,0px 0 4px #000,0px 0 4px #000;
+    white-space: nowrap;
+    text-align: center;
+    display: flex;
+    justify-content: center;
+    pointer-events: none;
 }
 
 @media only all and ( max-aspect-ratio: 3/4 ), only all and (max-width: 700px) {

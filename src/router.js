@@ -94,6 +94,11 @@
                     if (elements != null)
                         for (i = 0; i < elements.length; i++)
                             elements[i].style["display"] = visible;
+                    elements = document.getElementsByClassName('credit-label');
+                    visible = zoom >= 7 ? 'block' : 'none';
+                    if (elements != null)
+                        for (i = 0; i < elements.length; i++)
+                            elements[i].style["display"] = visible;
                 }
                 
                 var iconRuleIndex = 0;
@@ -205,23 +210,24 @@
                 }
 
                 for (var api_region of API.regions) {
-                    labels.push(new L.Marker([api_region.y - 128, api_region.x + 128], { icon: new L.DivIcon({ className: 'region-label', html: '<span>'.concat(api_region.realName).concat('</span>') }), iconAnchor: [api_region.y - 128, api_region.x + 128], zIndexOffset: 1000 }).addTo(mymap));
+                    labels.push(new L.Marker([api_region.y - 128, api_region.x + 128], {icon: new L.DivIcon({ className: 'region-label', html: '<span>'.concat(api_region.realName).concat('</span>')}), zIndexOffset: 1000}).addTo(mymap));
                 }
 
-                // for (var credit of [ // wow these are all wrong now
-                //     {text: "Hayden Grove", x: (139.079 - 128) * 0.90726470872655477280009094078879, y: (-155.292 + 128) * 0.90726470872655477280009094078879},
-                //     {text: "Steely Phil Bridge", x: (18.18 - 128) * 0.90726470872655477280009094078879, y: (-161.439 + 128) * 0.90726470872655477280009094078879},
-                //     {text: "Icanari Killing Fields", x: (134.071 - 128) * 0.90726470872655477280009094078879, y: (-143.104 + 128) * 0.90726470872655477280009094078879},
-                //     {text: "Kastow Peak", x: (124.817 - 128) * 0.90726470872655477280009094078879, y: (-122.72 + 128) * 0.90726470872655477280009094078879},
-                //     {text: "DragonZephyr Col", x: (119.176 - 128) * 0.90726470872655477280009094078879, y: (-83.464 + 128) * 0.90726470872655477280009094078879},
-                //     {text: "Skaj Sound", x: (49.826 - 128) * 0.90726470872655477280009094078879, y: (-102.048 + 128) * 0.90726470872655477280009094078879},
-                //     {text: "Inquisitor Silenus Trail", x: 75.701 - 128, y: -123.834 + 128},
-                //     {text: "Antraxen's Drive", x: 217.082 - 128, y: -136.754 + 128},
-                //     {text: "Fork of Malarthyn", x: 70.279 - 128, y: -103.977 + 128},
-                //     {text: "Maybar's Finesse", x: 158.151 - 128, y: -101.223 + 128}
+                for (var credit of [ // wow these are all wrong now
+                    {text: "Hayden Grove", x: (139.079 - 128) * 0.90726470872655477280009094078879, y: (-155.292 + 128) * 0.90726470872655477280009094078879},
+                    {text: "Steely Phil Bridge", x: (18.18 - 128) * 0.90726470872655477280009094078879, y: (-161.439 + 128) * 0.90726470872655477280009094078879},
+                    {text: "Icanari Killing Fields", x: (134.071 - 128) * 0.90726470872655477280009094078879, y: (-143.104 + 128) * 0.90726470872655477280009094078879},
+                    {text: "Kastow Peak", x: (124.817 - 128) * 0.90726470872655477280009094078879, y: (-122.72 + 128) * 0.90726470872655477280009094078879},
+                    {text: "DragonZephyr Col", x: (119.176 - 128) * 0.90726470872655477280009094078879, y: (-83.464 + 128) * 0.90726470872655477280009094078879},
+                    {text: "Skaj Sound", x: (49.826 - 128) * 0.90726470872655477280009094078879, y: (-102.048 + 128) * 0.90726470872655477280009094078879},
+                    {text: "Inquisitor Silenus Trail", x: 75.701 - 128, y: -123.834 + 128},
+                    {text: "Antraxen's Drive", x: 217.082 - 128, y: -136.754 + 128},
+                    {text: "Fork of Malarthyn", x: 70.279 - 128, y: -103.977 + 128},
+                    {text: "Maybar's Finesse", x: 158.151 - 128, y: -101.223 + 128}
 
-                // ])
-                // RegionLabels.addText(Recase(credit.text), credit.text, control, credit.x, credit.y, 7, 9, '#DAA520');
+                ]) {
+                    labels.push(new L.Marker([credit.y - 128, credit.x + 128], {icon: new L.DivIcon({className: 'credit-label', html: '<span>'.concat(credit.text).concat('</span>')}), zIndexOffset: 1000}).addTo(mymap));
+                }
 
                 for (i = 0; i < Paths.features.length; i++) {
                     var feature = Paths.features[i];
@@ -250,6 +256,7 @@
                     var all_features = [];
                     var last_ownership = "NONE";
                     var last_point = null;
+                    var ownership
 
                     for (j = 0; j < feature.geometry.coordinates.length; j++) {
                         point = feature.geometry.coordinates[j];
@@ -378,6 +385,10 @@
                         compact: null,
                         weightFn: function (a, b) { var dx = a[0] - b[0]; var dy = a[1] - b[1]; return Math.sqrt(dx * dx + dy * dy); }
                     }) : null,
+
+                    scale_labels: function () {
+                        scale_labels();
+                    },
 
                     calculateAngle: function (v1, v2) {
                         var angle = Math.atan2(v2[1] - v1[1], v2[0] - v1[0]);
