@@ -3,8 +3,8 @@ import math
 import os, shutil
 
 tile_size = 256
-source_img = Image.open('images/sat_map.webp')
-target_dir = 'images/sat_tiles/'
+source_img = Image.open('images/map.webp')
+target_dir = 'images/tiles/'
 
 # clear target tile folder
 for filename in os.listdir(target_dir):

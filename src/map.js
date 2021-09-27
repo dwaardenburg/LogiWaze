@@ -35,7 +35,7 @@ define(['leaflet', 'intersects'],
                             renderElements.ctx = renderElements.tile.getContext('2d');
                             renderElements.img = new Image();
                             var scale = Math.pow(2, Math.max(0, renderElements.coords.z - renderElements.gridLayer.max_native_zoom));
-                            renderElements.img.src = 'images/Tiles/'.concat(Math.min(renderElements.coords.z, renderElements.gridLayer.max_native_zoom)).concat('_').concat(Math.floor(renderElements.coords.x / scale)).concat('_').concat(Math.floor(renderElements.coords.y / scale)).concat('.webp');
+                            renderElements.img.src = 'images/tiles/'.concat(Math.min(renderElements.coords.z, renderElements.gridLayer.max_native_zoom)).concat('_').concat(Math.floor(renderElements.coords.x / scale)).concat('_').concat(Math.floor(renderElements.coords.y / scale)).concat('.webp');
                             renderElements.phase_2_complete = false;
                             renderElements.phase_3_complete = false;
                             renderElements.img.onload = () => renderElements.gridLayer.yield(renderElements, 2);

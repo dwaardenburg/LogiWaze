@@ -1,4 +1,4 @@
-﻿define(['leaflet', 'json-loader!../json/Roads.geojson', './geojson-path-finder/index.js', 'leaflet-routing-machine', '../json/towns.json', 'jquery'],
+﻿define(['leaflet', 'json-loader!../json/live_roads.geojson', './geojson-path-finder/index.js', 'leaflet-routing-machine', '../json/towns.json', 'jquery'],
     function (L, Paths, PathFinder, routing_machine, towns) {
         return {
             FoxholeRouter: function (mymap, API) {
@@ -67,7 +67,6 @@
                                 className: "map-icon"
                             })
                         }).bindPopup(String(data.id)));
-                        
                     }
                 }
 
