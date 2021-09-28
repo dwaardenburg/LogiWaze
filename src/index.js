@@ -4,7 +4,7 @@ global.L = require('leaflet');
 global.$ = require('jquery');
 
 global.VectorControlGrid = {
-    Create: (MaxNativeZoom, MaxZoom, Offset, API, RoadWidth, ControlWidth, GridDepth) => require('./map.js').Create(MaxNativeZoom, MaxZoom, Offset, API, RoadWidth, ControlWidth, GridDepth)
+    Create: (Maptype, MaxNativeZoom, MaxZoom, Offset, API, RoadWidth, ControlWidth, GridDepth) => require('./map.js').Create(Maptype, MaxNativeZoom, MaxZoom, Offset, API, RoadWidth, ControlWidth, GridDepth)
 };
 
 global.FoxholeRouter = {
@@ -140,7 +140,10 @@ APIManager.update(function () {
     Router.VectorControlGrid.build = "?".concat(build);
 
     L.control.layers(
-        {},
+        {
+            '<img src="images/MapIcons/MapIconHomeTownHallNeutral.webp" class="layer-icon">Cartographic': Router.MapCartographic,
+            '<img src="images/MapIcons/globe_icon.webp" class="layer-icon">Satellite': Router.MapSatellite,
+        },
         {
             '<img src="images/MapIcons/MapIconStaticBase3.webp" class="layer-icon">Town Halls': Router.TownHalls,
             '<img src="images/MapIcons/MapIconSafehouse.webp" class="layer-icon">Safehouses': Router.Safehouses,
@@ -587,7 +590,6 @@ APIManager.update(function () {
                     break;
                 case "Control":
                     Router.hideControl();
-                    Router.MapControl.remove();
                     break;
                 case "Road Quality":
                     Router.RoadQuality.remove();

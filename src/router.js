@@ -1,5 +1,5 @@
-﻿define(['leaflet', 'json-loader!../json/live_roads.geojson', './geojson-path-finder/index.js', 'leaflet-routing-machine', '../json/towns.json', 'jquery'],
-    function (L, Paths, PathFinder, routing_machine, towns) {
+﻿define(['leaflet', 'json-loader!../json/live_roads.geojson', './geojson-path-finder/index.js', '../json/towns.json'],
+    function (L, Paths, PathFinder, towns) {
         return {
             FoxholeRouter: function (mymap, API) {
                 var JSONRoads = L.geoJSON(Paths);
@@ -12,7 +12,8 @@
                 var BorderCache = {};
                 var BorderCrossings = {};
 
-                var ControlLayer = VectorControlGrid.Create(5, 8, [128, 128], API, .30, .17, 6);
+                var ControlLayer = VectorControlGrid.Create('cartographic', 5, 8, [128, 128], API, .30, .17, 6);
+                var SatelliteLayer = VectorControlGrid.Create('satellite', 5, 8, [128, 128], API, .30, .17, 6);
                 var hex_height = 256 / 7;
                 var hex_width = hex_height * 2 / Math.sqrt(3);
                 
@@ -22,6 +23,7 @@
                 var i, key, data, icon, resource, region
 
                 API.regions.forEach(region => ControlLayer.addHex(region.x, -region.y, hex_width, hex_height, !(region.name in API.mapControl)));
+                API.regions.forEach(region => SatelliteLayer.addHex(region.x, -region.y, hex_width, hex_height, !(region.name in API.mapControl)));
 
                 var resolveResource = function (icon) {
                     if (icon.id == null)
@@ -73,6 +75,7 @@
                 mymap.on('zoomend', () => {scale_icon()});
                 mymap.on('zoomanim', () => {scale_labels()});
                 ControlLayer.on('load', () => {scale_labels()});
+                SatelliteLayer.on('load', () => {scale_labels()});
 
                 function scale_labels() {
                     var zoom = mymap.getZoom();
@@ -330,11 +333,13 @@
                         if (lat != null && lng != null && lat2 != null && lng2 != null) {
                             let control = layer._latlngs[i - 1].ownership;
                             ControlLayer.addRoad([[lat, lng], [lat2, lng2]], { control: control == "COLONIALS" ? 0 : (control == "WARDENS" ? 1 : (control == "OFFLINE" ? 2 : 3)), tier: tier });
+                            SatelliteLayer.addRoad([[lat, lng], [lat2, lng2]], { control: control == "COLONIALS" ? 0 : (control == "WARDENS" ? 1 : (control == "OFFLINE" ? 2 : 3)), tier: tier });
                         }
                     }
                 }
 
                 ControlLayer.addTo(mymap);
+                SatelliteLayer.addTo(mymap);
 
                 var FoxholeRouter = {
                     renderer: L.canvas({tolerance: .2}).addTo(mymap),
@@ -347,6 +352,8 @@
                     TownHalls: L.layerGroup(town_icons).addTo(mymap),
                     Safehouses: L.layerGroup(safehouse_icons).addTo(mymap),
                     MapControl: L.layerGroup().addTo(mymap),
+                    MapCartographic: ControlLayer,
+                    MapSatellite: SatelliteLayer,
                     VectorControlGrid: ControlLayer,
                     RoadQuality: L.layerGroup().addTo(mymap),
                     RoadControl: L.layerGroup().addTo(mymap),
@@ -737,21 +744,29 @@
                     showControl: function () {
                         ControlLayer.draw = true;
                         ControlLayer.redraw();
+                        SatelliteLayer.draw = true;
+                        SatelliteLayer.redraw();
                     },
 
                     hideControl: function () {
                         ControlLayer.draw = false;
                         ControlLayer.redraw();
+                        SatelliteLayer.draw = false;
+                        SatelliteLayer.redraw();
                     },
 
                     showRoadQuality: function () {
                         ControlLayer.quality = true;
                         ControlLayer.redraw();
+                        SatelliteLayer.quality = true;
+                        SatelliteLayer.redraw();
                     },
 
                     hideRoadQuality: function () {
                         ControlLayer.quality = false;
                         ControlLayer.redraw();
+                        SatelliteLayer.quality = false;
+                        SatelliteLayer.redraw();
                     },
 
                     showRoadControl: function () {
@@ -760,6 +775,11 @@
                         ControlLayer.controls[2] = true;
                         ControlLayer.controls[3] = true;
                         ControlLayer.redraw();
+                        SatelliteLayer.controls[0] = true;
+                        SatelliteLayer.controls[1] = true;
+                        SatelliteLayer.controls[2] = true;
+                        SatelliteLayer.controls[3] = true;
+                        SatelliteLayer.redraw();
                     },
 
                     hideRoadControl: function () {
@@ -768,6 +788,11 @@
                         ControlLayer.controls[2] = false;
                         ControlLayer.controls[3] = false;
                         ControlLayer.redraw();
+                        SatelliteLayer.controls[0] = false;
+                        SatelliteLayer.controls[1] = false;
+                        SatelliteLayer.controls[2] = false;
+                        SatelliteLayer.controls[3] = false;
+                        SatelliteLayer.redraw();
                     },
 
                     showLabels: function () {
@@ -777,11 +802,15 @@
                     showBorders: function () {
                         ControlLayer.drawHexes = true;
                         ControlLayer.redraw();
+                        SatelliteLayer.drawHexes = true;
+                        SatelliteLayer.redraw();
                     },
 
                     hideBorders: function () {
                         ControlLayer.drawHexes = false;
                         ControlLayer.redraw();
+                        SatelliteLayer.drawHexes = false;
+                        SatelliteLayer.redraw();
                     }
                 };
 
