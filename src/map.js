@@ -90,18 +90,13 @@ define(['leaflet', 'intersects'],
                                 let overlay_ctx = overlay.getContext('2d');
 
                                 overlay_ctx.save();
-                                renderElements.gridLayer.drawValidRegions(overlay, overlay_ctx, renderElements.coords, renderElements.gridLayer);
+                                renderElements.gridLayer.drawRegions(overlay, overlay_ctx, renderElements.coords, renderElements.gridLayer);
                                 overlay_ctx.restore();
 
                                 overlay_ctx.save();
                                 overlay_ctx.globalCompositeOperation = 'source-atop';
                                 overlay_ctx.imageSmoothingQuality = 'low';
                                 overlay_ctx.drawImage(renderElements.temp_canvas, 1, 1, renderElements.temp_canvas.width - 2, renderElements.temp_canvas.height - 2, 0, 0, renderElements.tile.width, renderElements.tile.height);
-                                overlay_ctx.restore();
-
-                                overlay_ctx.save();
-                                overlay_ctx.scale(renderElements.gridLayer.pixelScale, renderElements.gridLayer.pixelScale);
-                                renderElements.gridLayer.drawInvalidRegions(overlay, overlay_ctx, renderElements.coords, renderElements.gridLayer);
                                 overlay_ctx.restore();
 
                                 renderElements.ctx.save();
@@ -140,32 +135,6 @@ define(['leaflet', 'intersects'],
 
             yield: (renderElements, phase) => setTimeout(() => renderElements.gridLayer.renderer(renderElements, phase), 0),
 
-            drawHex: (ctx, x, y, w, h, scale) => {
-                ctx.lineWidth = scale;
-                ctx.beginPath();
-                ctx.moveTo(x + w, y);
-                ctx.lineTo(x + w * .5, y + h);
-                ctx.lineTo(x - w * .5, y + h);
-                ctx.lineTo(x - w, y);
-                ctx.lineTo(x - .5 * w, y - h);
-                ctx.lineTo(x + .5 * w, y - h);
-                ctx.lineTo(x + w, y);
-                ctx.stroke();
-            },
-
-            fillHex: (ctx, x, y, w, h) => {
-                ctx.beginPath();
-                ctx.moveTo(x + w, y);
-                ctx.lineTo(x + w * .5, y + h);
-                ctx.lineTo(x - w * .5, y + h);
-                ctx.lineTo(x - w, y);
-                ctx.lineTo(x - .5 * w, y - h);
-                ctx.lineTo(x + .5 * w, y - h);
-                ctx.lineTo(x + w, y);
-                ctx.fill();
-                ctx.stroke();
-            },
-
             drawBorders: function (renderElements) {
                 let coords = renderElements.coords;
 
@@ -188,49 +157,62 @@ define(['leaflet', 'intersects'],
                     var label_x = source.x * zoom - coords.x * tile.width / renderElements.gridLayer.pixelScale - label_w - shadow;
                     var label_y = source.y * zoom - coords.y * tile.height / renderElements.gridLayer.pixelScale - label_h - shadow;
 
-                    if (intersects.boxBox(0, 0, tile.width, tile.height, label_x, label_y, label_w, label_h))
-                        renderElements.gridLayer.drawHex(renderElements.ctx, label_x + label_w * .5, label_y + label_h * .5, label_w * .5, label_h * .5, lineWidth);
+                    if (intersects.boxBox(0, 0, tile.width, tile.height, label_x, label_y, label_w, label_h)) {
+                        var x = label_x + label_w * .5
+                        var y = label_y + label_h * .5
+                        var w = label_w * .5
+                        var h = label_h * .5
+                        renderElements.ctx.lineWidth = lineWidth;
+                        renderElements.ctx.beginPath();
+                        renderElements.ctx.moveTo(x + w, y);
+                        renderElements.ctx.lineTo(x + w * .5, y + h);
+                        renderElements.ctx.lineTo(x - w * .5, y + h);
+                        renderElements.ctx.lineTo(x - w, y);
+                        renderElements.ctx.lineTo(x - .5 * w, y - h);
+                        renderElements.ctx.lineTo(x + .5 * w, y - h);
+                        renderElements.ctx.lineTo(x + w, y);
+                        renderElements.ctx.stroke();
+                    }
                 }
                 renderElements.ctx.restore();
             },
-
-            drawValidRegions: function (tile, ctx, coords, gridLayer) {
+            
+            drawRegions: function (tile, ctx, coords, gridLayer) {
+                var label_w, label_h, label_x, label_y
                 var zoom = Math.pow(2, coords.z);
                 var lineWidth = 1 * Math.pow(2, coords.z);
                 var shadow = lineWidth * .5 / Math.pow(2, gridLayer.maxZoom);
                 ctx.save();
-                ctx.fillStyle = '#FFFFFFFF';
-                ctx.strokeStyle = '#FFFFFFFF';
                 ctx.scale(gridLayer.pixelScale, gridLayer.pixelScale);
                 for (var source of gridLayer.hex_sources) {
                     if (!source.offline) {
-                        var label_w = source.size.width * zoom + shadow * 2;
-                        var label_h = source.size.height * zoom + shadow * 2;
-                        var label_x = source.x * zoom - coords.x * tile.width / gridLayer.pixelScale - label_w - shadow;
-                        var label_y = source.y * zoom - coords.y * tile.height / gridLayer.pixelScale - label_h - shadow;
-                        if (intersects.boxBox(0, 0, tile.width, tile.height, label_x, label_y, label_w, label_h))
-                            gridLayer.fillHex(ctx, label_x + label_w * .5, label_y + label_h * .5, label_w * .5, label_h * .5);
+                        ctx.fillStyle = '#FFFFFFFF';
+                        ctx.strokeStyle = '#FFFFFFFF';
+                    } else {
+                        ctx.fillStyle = '#000000FF';
+                        ctx.strokeStyle = '#000000FF';
+                    }
+                    label_w = source.size.width * zoom + shadow * 2;
+                    label_h = source.size.height * zoom + shadow * 2;
+                    label_x = source.x * zoom - coords.x * tile.width / gridLayer.pixelScale - label_w - shadow;
+                    label_y = source.y * zoom - coords.y * tile.height / gridLayer.pixelScale - label_h - shadow;
+                    if (intersects.boxBox(0, 0, tile.width, tile.height, label_x, label_y, label_w, label_h)) {
+                        var x = label_x + label_w * .5
+                        var y = label_y + label_h * .5
+                        var w = label_w * .5
+                        var h = label_h * .5
+                        ctx.beginPath();
+                        ctx.moveTo(x + w, y);
+                        ctx.lineTo(x + w * .5, y + h);
+                        ctx.lineTo(x - w * .5, y + h);
+                        ctx.lineTo(x - w, y);
+                        ctx.lineTo(x - .5 * w, y - h);
+                        ctx.lineTo(x + .5 * w, y - h);
+                        ctx.lineTo(x + w, y);
+                        ctx.fill();
+                        ctx.stroke();
                     }
                 }
-                ctx.restore();
-            },
-
-            drawInvalidRegions: function (tile, ctx, coords, gridLayer) {
-                var zoom = Math.pow(2, coords.z);
-                var lineWidth = 1 * Math.pow(2, coords.z);
-                var shadow = lineWidth * .5 / Math.pow(2, gridLayer.maxZoom);
-                ctx.save();
-                ctx.fillStyle = '#000000FF';
-                ctx.strokeStyle = '#000000FF';
-                for (var source of gridLayer.hex_sources)
-                    if (source.offline) {
-                        var label_w = source.size.width * zoom + shadow * 2;
-                        var label_h = source.size.height * zoom + shadow * 2;
-                        var label_x = source.x * zoom - coords.x * tile.width / gridLayer.pixelScale - label_w - shadow;// / gridLayer.pixelScale
-                        var label_y = source.y * zoom - coords.y * tile.height / gridLayer.pixelScale - label_h - shadow;
-                        if (intersects.boxBox(0, 0, tile.width, tile.height, label_x, label_y, label_w, label_h))
-                            gridLayer.fillHex(ctx, label_x + label_w * .5, label_y + label_h * .5, label_w * .5, label_h * .5);
-                    }
                 ctx.restore();
             },
 
